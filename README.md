@@ -6,7 +6,7 @@ R-script for a regional assessment of the North and Celtic Sea. Output follows I
 
 Short documentation on fishing and environmental input parameters, longevity predictions and state/impact predictions is found below.
 
-# Environmental data North Sea/Celtic Sea
+## Environmental data North Sea/Celtic Sea
 •	Seabed depth: taken from BENTHIS, original source DBSEABED – Chris Jenkins http://instaar.colorado.edu/~jenkinsc/dbseabed/
 
 •	Sediment fractions (gravel, sand, mud): taken from Wilson et al. (2018) A synthetic map of the north-west European Shelf sedimentary environment for applications in marine science Earth Syst. Sci. Data, 10, 109-130 https://www.earth-syst-sci-data.net/10/109/2018/
