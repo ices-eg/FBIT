@@ -20,7 +20,9 @@ R-script for a regional assessment of the North and Celtic Sea. Output follows I
 
 ### Impact/state prediction
 •	The population dynamic model is first described in Pitcher et al. (2017) Estimating the sustainability of towed fishing‐gear impacts on seabed habitats: a simple quantitative risk assessment method applicable to data‐limited fisheries." Methods in Ecology and Evolution 8.4 (2017): 472-480.
+
 •	The parameterization of the trawl-specific depletion rates is taken from Hiddink et al. (2017) Global analysis of depletion and recovery of seabed biota after bottom trawling disturbance. Proceedings of the National Academy of Sciences 201618858.
+
 •	The parameterization of the longevity-specific recovery rates is taken from Hiddink et al. (2018) Assessing bottom‐trawling impacts based on the longevity of benthic invertebrates Journal of Applied Ecology 
 
 
