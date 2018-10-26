@@ -449,7 +449,8 @@
   ronethree <- 5.31/2
   rthreeten <- 5.31/6.5
   rten <- 5.31/10
-
+  Recov <- c(rzerone,ronethree,rthreeten,rten)
+  
   for (j in 1: length(amplifier)){
     
     ### calculate fractions of biomass per longevity class 
@@ -467,23 +468,28 @@
     Depl <- cbind(Depl_TBB,Depl_OT,Depl_TD,Depl_sein)
     Depl_tot<-rowSums(Depl,na.rm=T)
     
-    impact<- zerone*(Depl_tot/rzerone)+onethree*(Depl_tot/ronethree)+
-      threeten*(Depl_tot/rthreeten)+tenmore*(Depl_tot/rten)
-    impact[impact > 1] <- 1
-    state <- 1-impact
-    state[is.na(state)] <- 1
+    # calculate state for the whole community
+    frac_bio <- cbind(zerone,onethree,threeten,tenmore)
+
+    dat <-as.data.frame(matrix(data=NA,nrow=nrow(A12dat)))
+    for(i in 1:4){
+      dat[,i]<-(frac_bio[,i]*(1-Depl_tot/Recov[i]))
+    }  
+    dat[dat<0] <- 0
+    state <- rowSums(dat)
+
     state_ampl <- cbind(state_ampl,state)
     ccname <- c(ccname,paste("state",amplifier[j],sep="_"))
   }
   
   state_ampl[,1:7][is.na(state_ampl[,1:7]) & A12dat$Depth >= -200 & A12dat$Depth < 0] <- 1
+  test <- apply(state_ampl,2,sort,decreasing=F)
+  state_ampl<-as.data.frame(test)
   colnames(state_ampl) <- ccname 
-  state_ampl<-as.data.frame(state_ampl)
-  
-  state_ampl <- state_ampl[order(state_ampl$state_0.25,decreasing = F),]
+
   state_ampl$footprop <- 1-(1:nrow(state_ampl))/nrow(state_ampl)
   
-    A12fig <- state_ampl
+  A12fig <- state_ampl
   
   save(A12fig, file="FigureA12.RData")
 
