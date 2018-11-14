@@ -1,3 +1,5 @@
+# version 1.0 14-11-2018
+
 rm(list = ls())
 
 ### libraries needed
