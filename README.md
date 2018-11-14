@@ -1,5 +1,5 @@
 # FBIT
-Fisheries Benthic Impact Tools
+Fisheries Benthic Impact Tools.
 
 
 R-script for a regional assessment of the North and Celtic Sea. Output follows ICES demonstration product (2017) in “EU request on indicators of the pressure and impact of bottom-contacting fishing gear on the seabed, and of trade-offs in the catch and the value of landings “. A (short) documentation on fishing and environmental input parameters, longevity predictions and state/impact predictions is found below.
