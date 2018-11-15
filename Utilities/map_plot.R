@@ -14,18 +14,34 @@
     filedata2<-data.frame(longitude = coordinates(filename)[,1], latitude = coordinates(filename)[,2])
     filedata<-cbind(filedata2,filedata)
   
+    minlong <- round(Region@bbox[1,1]-1)
+    maxlong <- round(Region@bbox[1,2]+1)
+    minlat  <- round(Region@bbox[2,1]-1)
+    maxlat  <- round(Region@bbox[2,2]+1)
+    coordslim <- c(minlong,maxlong,minlat,maxlat)
+    coordxmap <- round(seq(minlong,maxlong,length.out = 4))
+    coordymap <- round(seq(minlat,maxlat,length.out = 4))
     
-  if (ecoregion == "Greater North Sea"){
-    coordslim <- c(-12, 13, 48 , 62.5)
-    coordxmap <- c(-10,-5,0,5,10)
-    coordymap <- c(49,55,61)
+    if (Assunit == "Ecoregion"){
+      pointsize <- .15   
+    } else if (Assunit =="EEZ"){
+      pointsize <- .7  
+    } else if (Assunit =="OSPARreg"){
+      pointsize <- .15  
+    }
+    
+    
+ # if (ecoregion == "Greater North Sea"){
+ #   coordslim <- c(-12, 13, 48 , 62.5)
+#    coordxmap <- c(-10,-5,0,5,10)
+#    coordymap <- c(49,55,61)
    
-  } else if (ecoregion == "Celtic Seas"){ 
-    coordslim <- c(-15, 3, 48 , 62.5)
-    coordxmap <- c(-12,-6,0)
-    coordymap <- c(49,55,61)
+#  } else if (ecoregion == "Celtic Seas"){ 
+#    coordslim <- c(-15, 3, 48 , 62.5)
+#    coordxmap <- c(-12,-6,0)
+#    coordymap <- c(49,55,61)
     
-  }
+#  }
   
     if (var == "SurfaceSAR"){  
       YearNames<-c()
@@ -44,7 +60,7 @@
       quat<-c(-1,0,0.1,0.5,1,5,10,100)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
       
-      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T) +
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
                           scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Surface abrasion",
                           labels=c("0-0.1", "0.1-0.5","0.5-1","1-5","5-10",">10","no fishing"))
       figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -81,7 +97,7 @@
       quat<-c(-1,0,0.1,0.5,1,5,10,100)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
       
-      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T) +
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
         scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Subsurf abrasion",
                             labels=c("0-0.1", "0.1-0.5","0.5-1","1-5","5-10",">10","no fishing"))
       figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -118,7 +134,7 @@
       quat<-c(-1,0,100,1000,10000,100000,10000000)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
       
-      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T) +
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
         scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Total weight (kg)",
                             labels=c("0-100    ", expression(100-10^3),expression(10^3-10^4),expression(10^4-10^5),expression(paste(">",10^5,"     ")),"no fishing"))
       figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -155,7 +171,7 @@
       quat<-c(-1,0,100,1000,10000,100000,10000000)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
       
-      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T) +
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
         scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Total value (euros)",
                             labels=c("0-100    ", expression(100-10^3),expression(10^3-10^4),expression(10^4-10^5),expression(paste(">",10^5,"     ")),"no fishing"))
       figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -194,7 +210,7 @@
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
       filedata$cat[filedata$Depth< -200]<- NA
           
-      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T) +
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
         scale_colour_manual(values=c(colorchoice),na.value = "grey50",name  ="State (PD model)",
                             labels=c("0-0.1","0.1-0.3","0.3-0.5","0.5-0.7","0.7-0.9","0.9-1","depth > 200 m"))
       figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -234,7 +250,7 @@
     filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
     filedata$cat[filedata$Depth< -200]<- NA
     
-    figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T) +
+    figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
       scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Impact (PD model)",
                           labels=c("0-0.1","0.1-0.3","0.3-0.5","0.5-0.7","0.7-0.9","0.9-1" ,"depth > 200 m"))
     figmap <- figmap +  geom_polygon(data = worldMap.points, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")

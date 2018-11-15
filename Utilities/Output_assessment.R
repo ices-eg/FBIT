@@ -5,6 +5,8 @@
   pathdir_prodFT <- paste(pathdir,"4 - Producing figures and tables",Assregion,AssYear,sep="/")
 
   # set directory for output
+  setwd(paste(pathdir,"5 - Output",sep="/"))  
+  dir.create(paste(Assregion))
   setwd(paste(pathdir,"5 - Output",Assregion,sep="/"))  
   dir.create(paste(AssYear))
   setwd(paste(pathdir,"5 - Output",Assregion,AssYear,sep="/"))

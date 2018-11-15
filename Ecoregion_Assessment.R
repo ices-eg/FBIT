@@ -1,5 +1,3 @@
-# version 1.0 14-11-2018
-
 rm(list = ls())
 
 ### libraries needed
@@ -16,13 +14,14 @@ rm(list = ls())
   load("NoCeSeagrid_state.Rdata") # for now only North Sea and Celtic Sea
   
 ### select the assessment region and years
-  Assregion <- "Greater North Sea" ##  "Greater North Sea" or "Celtic Seas"
+  Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg"
+  Assregion <- "Greater North Sea" ##  check which to select -> unique(NoCe_state@data[,paste(Assunit)])
   AssYear <- 2015 # year to be assessed
   Period <- 2009:2015 # period with data for time series plot
   AssPeriod <- 2010:2015 # assessment period /typically  6 years
   
 ### select the region 
-  Region<-subset(NoCe_state,NoCe_state@data$Ecoregion == Assregion)
+  Region<-subset(NoCe_state,NoCe_state@data[,paste(Assunit)] == Assregion)
   
 ### run script to process all figures and tables
   setwd(paste(pathdir,"Utilities",sep="/"))
