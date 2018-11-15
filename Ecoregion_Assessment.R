@@ -5,7 +5,7 @@ rm(list = ls())
   library(dplyr)
 
 ### github folder
-  pathdir <- "..../"
+  pathdir <- "C://Users//fbas//Documents//GitHub//FBIT"
 
 #####################################################################################
 ### load processed file, with longevity and state/impact 

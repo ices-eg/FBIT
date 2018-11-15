@@ -15,8 +15,21 @@
     if(!is.na(x[SSAR_year])) sum( (1-pnbinom(q=0, size=100, mu=x[SSAR_year]*x["area_sqkm"])), na.rm=T) /x["area_sqkm"]
   } )
 
+<<<<<<< HEAD
   setwd(paste(pathdir,"4 - Producing figures and tables",sep="/"))  
   dir.create(paste(Assregion))
+=======
+  #  possibly assuming a random distribution of trawling tracks
+  #  within grid cells (see 2017 report of WGSFD and Ellis et al., 2014, Can. J. Fish. Aquat. 71:733-746). 
+  # total area fished assuming a random distribution of trawling tracks within the grid cell:
+  Region@data$RandomF_SSAR <-  apply(Region@data[, c(SSAR_year, "area_sqkm")], 1, function (x) {   
+                                           if(!is.na(x[SSAR_year])) sum( (1-pnbinom(q=0, size=100, mu=x[SSAR_year]*x["area_sqkm"])), na.rm=T) /x["area_sqkm"]
+                                           } )
+  
+ 
+
+
+>>>>>>> eec7b788d2aaae70419b82c8b7e1b98d35c0f5da
   setwd(paste(pathdir,"4 - Producing figures and tables",Assregion,sep="/"))  
   dir.create(paste(AssYear))
   setwd(paste(pathdir,"4 - Producing figures and tables",Assregion,AssYear,sep="/"))
@@ -28,6 +41,9 @@
 ################
   save(Region, file="FigureA1.RData")
 
+
+
+
 #####
 # Table A.1
 ################
@@ -37,6 +53,7 @@
   # indicator 1 intensity
   TA1dat$sweptarea <- TA1dat[,SSAR_year]*TA1dat$area_sqkm
   ind1 <- sum(TA1dat$sweptarea,na.rm=T)/sum(TA1dat$area_sqkm)
+
 
   # indicator 2 proportion of grid cells fished (fished irrespective of swept area > 0.001)
   ind2 <- length(which(TA1dat[,SSAR_year]>0.001))/nrow(TA1dat)
