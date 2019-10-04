@@ -8,7 +8,7 @@
   library(latex2exp)
 
   # set folder directory
-  pathdir <- "H:/Werk/Benthic assessments BENTHIS and ICES/TAF - ICES tutorial/"
+  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/"
   
   # load output step 1 
   setwd(paste(pathdir,"Step 1 Assign region of interest/Data layers",sep="/"))

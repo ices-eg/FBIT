@@ -3,7 +3,7 @@ library(dplyr)
 library(lme4)
 
 # set folder directory
-  pathdir <- "H:/Werk/Benthic assessments BENTHIS and ICES/TAF - ICES tutorial/Step 2 Estimate relationships benthic data/"
+  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/Step 2 Estimate relationships benthic data/"
 
 # open benthic data  
   setwd(paste(pathdir,"Benthic data",sep="/"))

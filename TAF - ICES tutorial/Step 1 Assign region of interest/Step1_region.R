@@ -6,7 +6,7 @@
   library(raster)
   
 # set folder directory
-  pathdir <- "H:/Werk/Benthic assessments BENTHIS and ICES/TAF - ICES tutorial/Step 1 Assign region of interest/Data layers/"
+  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/Step 1 Assign region of interest/Data layers/"
   
 # assign area of interest
   gt<-(GridTopology(c(-1.975, 50.025), c(0.05, 0.05), c(200, 150))) # c(long, lat), c(cellsize long, lat), c(nb of grids long, lat)
