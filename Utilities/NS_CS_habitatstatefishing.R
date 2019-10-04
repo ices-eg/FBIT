@@ -29,13 +29,13 @@
     loopdata<-Region@data
   
     loopdata<-cbind(loopdata, TBB@data[match(loopdata$squares,TBB@data$c_square), c(5)])
-    colnames(loopdata)[14] <- "TBB_SurfSAR"
+    colnames(loopdata)[16] <- "TBB_SurfSAR"
     loopdata<-cbind(loopdata, OT@data[match(loopdata$squares,OT@data$c_square), c(5)])
-    colnames(loopdata)[15] <- "OT_SurfSAR"
+    colnames(loopdata)[17] <- "OT_SurfSAR"
     loopdata<-cbind(loopdata, TD@data[match(loopdata$squares,TD@data$c_square), c(5)])
-    colnames(loopdata)[16] <- "TD_SurfSAR"
+    colnames(loopdata)[18] <- "TD_SurfSAR"
     loopdata<-cbind(loopdata, Seine@data[match(loopdata$squares,Seine@data$c_square), c(5)])
-    colnames(loopdata)[17] <- "Seine_SurfSAR"
+    colnames(loopdata)[19] <- "Seine_SurfSAR"
     
     Depl_TBB  <- 0.14 * loopdata$TBB_SurfSAR   ### data from Hiddink et al. PNAS 2017 Table S4
     Depl_OT   <- 0.06 * loopdata$OT_SurfSAR    ### data from Hiddink et al. PNAS 2017 Table S4
