@@ -12,7 +12,7 @@
   #  within grid cells (see 2017 report of WGSFD and Ellis et al., 2014, Can. J. Fish. Aquat. 71:733-746). 
   # total area fished assuming a random distribution of trawling tracks within the grid cell:
   Region@data$RandomF_SSAR <-  apply(Region@data[, c(SSAR_year, "area_sqkm")], 1, function (x) {   
-    if(!is.na(x[SSAR_year])) sum( (1-pnbinom(q=0, size=100, mu=x[SSAR_year]*x["area_sqkm"])), na.rm=T) /x["area_sqkm"]
+  if(!is.na(x[SSAR_year])) sum( (1-pnbinom(q=seq(1,100,by=1), size=100, mu=x[SSAR_year]*x["area_sqkm"])), na.rm=T) /x["area_sqkm"]
   } )
 
   setwd(paste(pathdir,"4 - Producing figures and tables",sep="/"))  
