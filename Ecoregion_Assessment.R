@@ -13,7 +13,7 @@ rm(list = ls())
   library(gridExtra)
 
 ### github folder
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT - offline/"
+  pathdir <- "C:/Users/pdvd/Online for git/FBIT"
   
 ### folder for restricted data
   pathdir_nogit <- "C:/Users/pdvd/Online for git/FBIT - Fisheries restricted"
