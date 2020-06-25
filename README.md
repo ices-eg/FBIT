@@ -2,21 +2,18 @@
 Fisheries Benthic Impact Tools
 
 
-R-script for a regional assessment of the North and Celtic Sea. Output follows ICES demonstration product (2017) in “EU request on indicators of the pressure and impact of bottom-contacting fishing gear on the seabed, and of trade-offs in the catch and the value of landings “. A (short) documentation on fishing and environmental input parameters, longevity predictions and state/impact predictions is found below.
+R-script for a regional assessment of different ICES marine ecoregions from WKFBIT. Output follows ICES demonstration product (2017) in “EU request on indicators of the pressure and impact of bottom-contacting fishing gear on the seabed, and of trade-offs in the catch and the value of landings “. Documentation on fishing and environmental input parameters, longevity predictions and state/impact predictions is found in WKFBIT report. Some data sources are provided here:
 
-### Environmental data North Sea/Celtic Sea
-•	Seabed depth: taken from BENTHIS, original source DBSEABED – Chris Jenkins http://instaar.colorado.edu/~jenkinsc/dbseabed/
+### Fisheries and MSFD habitats
+•	MSFD habitat categorization: taken from EMODNET as downloaded in 2019 http://www.emodnet.eu/
 
-•	Sediment fractions (gravel, sand, mud): taken from Wilson et al. (2018) A synthetic map of the north-west European Shelf sedimentary environment for applications in marine science Earth Syst. Sci. Data, 10, 109-130 https://www.earth-syst-sci-data.net/10/109/2018/
+•	Bottom trawl fishing activities are obtained from the ICES datacentre using the icesVMS R package  
 
-•	Tidal-bed shear stress: estimated using a 2-dimensional hydrographic model. This model predicts shear stress (the force per unit area exerted on the seabed by the tidal currents: N m−2) per sampled station on a 1/8° longitude by 1/12° latitude spatial scale. The shear stress calculations are explained in more detail in Hiddink et al. (2006). Contact person: John Aldridge / Jan Hiddink
-
-•	EUNIS habitat categorization: taken from EMODNET EUSEAMAP as downloaded on 7 March 2018 http://www.emodnet.eu/
-
-•	Bottom trawl fishing disturbance: taken from OSPAR request on the production of spatial data layers of fishing intensity/pressure (2017) http://www.ices.dk/sites/pub/Publication%20Reports/Advice/2017/Special_requests/OSPAR.2017.17.pdf  
-
-### Longevity prediction North Sea/Celtic Sea
+### Longevity prediction North Sea
 •	Parameterization of the biomass longevity composition of the benthic community is taken from Rijnsdorp et al. (2018) Estimating sensitivity of seabed habitats to disturbance by bottom trawling based on the longevity of benthic fauna Ecological Applications 
+
+### Longevity prediction Baltic Sea
+•	Parameterization of the biomass longevity composition of the benthic community is taken from van Denderen et al. (2020) Evaluating impacts of bottom trawling and hypoxia on benthic communities at the local, habitat, and regional scale using a modelling approach ICES journal of Marine Science
 
 ### Impact/state prediction
 •	The population dynamic model is first described in Pitcher et al. (2017) Estimating the sustainability of towed fishing‐gear impacts on seabed habitats: a simple quantitative risk assessment method applicable to data‐limited fisheries." Methods in Ecology and Evolution 8.4 (2017): 472-480.
