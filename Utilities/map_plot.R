@@ -142,7 +142,34 @@
         coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
       figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
       return(figmap)  
+    
+    } else if (var == "medlong"){ 
       
+      tr <- filedata$medlong
+      
+      quat<-c(0,2,4,6,8,10,10000000)
+      filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
+      
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
+        scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Median longevity \n Years",
+                            labels=c("<2", "2-4","4-6","6-8","8-10",">10"))
+      figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
+      figmap <- figmap +  theme(plot.background=element_blank(),
+                                panel.background=element_blank(),
+                                axis.text.y   = element_text(size=16),
+                                axis.text.x   = element_text(size=16),
+                                axis.title.y  = element_text(size=16),
+                                axis.title.x  = element_text(size=16),
+                                panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
+                                legend.text   = element_text(size=11),
+                                legend.title  = element_text(size=11))+
+        scale_x_continuous(breaks=coordxmap)+
+        scale_y_continuous(breaks=coordymap)+
+        coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
+      figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
+      return(figmap)  
+        
+    
     } else if (var == "total_value"){  
       
       YearNames<-c()

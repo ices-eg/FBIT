@@ -16,11 +16,11 @@
 
   sar    <- (map_plot(figA1,"surface_sar",AssYear,purples,Assregion))
   impact <- (map_plot(figA1,"impact",AssYear,bluegreen,Assregion))
-  weight <- (map_plot(figA1,"total_weight",AssYear,yellowred,Assregion))
+  longevi <- (map_plot(figA1,"medlong",AssYear,bluegreen,Assregion))
   value  <- (map_plot(figA1,"total_value",AssYear,yellowred,Assregion))
   
   pdf(paste(Assregion,AssYear,"figureA1.pdf",sep="_"),width=12,height=9) 
-  print(grid.arrange(sar,impact, weight,value, nrow = 2))
+  print(grid.arrange(sar,impact, longevi,value, nrow = 2))
   dev.off()
   
   jpeg(file = paste(Assregion,AssYear,"figureA1.jpeg",sep="_"), width=12, height=9,units ='in', res = 300)
