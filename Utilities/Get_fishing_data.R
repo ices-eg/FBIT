@@ -34,7 +34,7 @@
   }
 
   Fisheries <- loopdata
-  setwd(paste(pathdir_nogit,"FBIT - Fisheries restricted",sep="/"))
+  setwd(pathdir_nogit)
   save(Fisheries,file=paste(EcoReg,"fisheries.RData",sep="_"))
 
 # get fishing data specified per metier (otter)

@@ -16,8 +16,10 @@
   setwd(paste(pathdir_nogit,"Producing figures and tables",Assregion,AssYear,sep="/"))
   
   Region <- Region[!(is.na(Region$medlong)),]
-  colnames(Region@data)[5]  <- "longitude"
-  colnames(Region@data)[6]  <- "latitude"
+  idx <- which(names(Region@data)== "long")
+  colnames(Region@data)[idx]  <- "longitude"
+  idx <- which(names(Region@data)== "lat")
+  colnames(Region@data)[idx]  <- "latitude"
   
 #####
 # Figure A.1
@@ -402,27 +404,27 @@
   OTRESTsweptarea <- datT4[,SSAR_OTREST_year]*datT4$area_sqkm
   A4table <- c(sum( OTCRUsweptarea),sum(OTRESTsweptarea),sum(TBBsweptarea))/1000
   
-  # Intensity of area fished > 0.001
-  TBB_T4 <- subset(datT4,datT4[,c(SSAR_TBB_year)] > 0.001) 
-  OTCRU_T4 <- subset(datT4,datT4[,c(SSAR_OTCRU_year)] > 0.001) 
-  OTREST_T4 <- subset(datT4,datT4[,c(SSAR_OTREST_year)] > 0.001) 
+  # Intensity of area fished > 0
+  TBB_T4 <- subset(datT4,datT4[,c(SSAR_TBB_year)] > 0) 
+  OTCRU_T4 <- subset(datT4,datT4[,c(SSAR_OTCRU_year)] > 0) 
+  OTREST_T4 <- subset(datT4,datT4[,c(SSAR_OTREST_year)] > 0) 
   A4table <- rbind(A4table, c(mean(OTCRU_T4[,SSAR_OTCRU_year]),mean(OTREST_T4[,SSAR_OTREST_year] ),mean(TBB_T4[,SSAR_TBB_year])))
   
   # Aggregation of fishing pressure (90% of fishing effort)
   TBB_T4 <- TBB_T4[order(TBB_T4[,SSAR_TBB_year],decreasing = T),]
   TBB_T4$cumSSAR <- cumsum(TBB_T4[,SSAR_TBB_year])
   TBB_T4$cumSSAR <- TBB_T4$cumSSAR / sum(TBB_T4[,SSAR_TBB_year])
-  tb09 <- min(which (TBB_T4$cumSSAR > .9))/nrow(TBB_T4)
+  tb09 <- ifelse(nrow(TBB_T4)==0,NA,min(which (TBB_T4$cumSSAR > .9))/nrow(TBB_T4))
   
   OTCRU_T4 <- OTCRU_T4[order(OTCRU_T4[,SSAR_OTCRU_year],decreasing = T),]
   OTCRU_T4$cumSSAR <- cumsum(OTCRU_T4[,SSAR_OTCRU_year])
   OTCRU_T4$cumSSAR <- OTCRU_T4$cumSSAR / sum(OTCRU_T4[,SSAR_OTCRU_year])
-  oc09 <- min(which (OTCRU_T4$cumSSAR > .9))/nrow(OTCRU_T4)
+  oc09 <- ifelse(nrow(OTCRU_T4)==0,NA,min(which (OTCRU_T4$cumSSAR > .9))/nrow(OTCRU_T4))
   
   OTREST_T4 <- OTREST_T4[order(OTREST_T4[,SSAR_OTREST_year],decreasing = T),]
   OTREST_T4$cumSSAR <- cumsum(OTREST_T4[,SSAR_OTREST_year])
   OTREST_T4$cumSSAR <- OTREST_T4$cumSSAR / sum(OTREST_T4[,SSAR_OTREST_year])
-  ot09 <- min(which (OTREST_T4$cumSSAR > .9))/nrow(OTREST_T4)
+  ot09 <- ifelse(nrow(OTREST_T4)==0,NA, min(which (OTREST_T4$cumSSAR > .9))/nrow(OTREST_T4))
   
   A4table <- rbind(A4table, c(oc09,ot09,tb09))
   
