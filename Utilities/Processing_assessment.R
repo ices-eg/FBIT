@@ -101,7 +101,6 @@
   figA3 <- cbind(figA3, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
   nam <- paste("surface_sar",AssPeriod,sep="_")
   figA3 <- cbind(figA3, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
-  figA3[,nam][is.na(figA3[,nam])] <- 0
   save(figA3, file="FigureA3.RData")
   
 #####

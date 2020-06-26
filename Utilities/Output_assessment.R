@@ -16,7 +16,7 @@
 
   sar    <- (map_plot(figA1,"surface_sar",AssYear,purples,Assregion))
   impact <- (map_plot(figA1,"impact",AssYear,bluegreen,Assregion))
-  longevi <- (map_plot(figA1,"medlong",AssYear,bluegreen,Assregion))
+  longevi <- (map_plot(figA1,"medlong",AssYear,sealand,Assregion))
   value  <- (map_plot(figA1,"total_value",AssYear,yellowred,Assregion))
   
   pdf(paste(Assregion,AssYear,"figureA1.pdf",sep="_"),width=12,height=9) 
@@ -24,7 +24,7 @@
   dev.off()
   
   jpeg(file = paste(Assregion,AssYear,"figureA1.jpeg",sep="_"), width=12, height=9,units ='in', res = 300)
-  print(grid.arrange(sar,impact, weight,value, nrow = 2))
+  print(grid.arrange(sar,impact, longevi,value, nrow = 2))
   dev.off()
   
 ##### Figure A.2
@@ -82,11 +82,20 @@
   
   quat<-c(-300,-2,-0.5,-0.1,0.1,0.5,2,300)
   figA3$cat<- as.factor(cut(figA3$dif_surface_sar,quat,right=T))
+  label_all <- c("> -2", "-2 to -0.5", "-0.5 to -0.1","-0.1 to 0.1","0.1 to 0.5","0.5 to 2","> 2")
+  idx <- which(!(table(figA3$cat)==0))
+  label_sub <- label_all[idx]
+  
+  if((length(figA3$cat[is.na(figA3$cat)])>0)){
+    label_sub <- c(label_sub,"no fishing")
+  }
+  
+  colorchoice <- blueorange[idx]
   
   sdsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
   sdsar <- sdsar +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
-           scale_colour_manual(values=blueorange,na.value = "grey50",name  = "Surface abrasion (dif)",
-                        labels=c("> -2", "-2 to -0.5", "-0.5 to -0.1","-0.1 to 0.1","0.1 to 0.5","0.5 to 2","> 2"))
+           scale_colour_manual(values=colorchoice,na.value = "grey50",name  = "Surface abrasion (dif)",
+                        labels=label_sub)
   sdsar <- sdsar +  theme(plot.background=element_blank(),
                             panel.background=element_blank(),
                             axis.text.y   = element_text(size=16),
@@ -102,12 +111,20 @@
   sdsar <- sdsar +   guides(colour = guide_legend(override.aes = list(size=5)))
   
   figA3$cat<- as.factor(cut(figA3$dif_subsurface_sar,quat,right=T))
-  bluegreen <- c("#feb24c","#fed976","#ffffcc","#c7e9b4","#7fcdbb","#41b6c4","#2c7fb8","#253494")
+  label_all <- c("> -2", "-2 to -0.5", "-0.5 to -0.1","-0.1 to 0.1","0.1 to 0.5","0.5 to 2","> 2")
+  idx <- which(!(table(figA3$cat)==0))
+  label_sub <- label_all[idx]
+  
+  if((length(figA3$cat[is.na(figA3$cat)])>0)){
+    label_sub <- c(label_sub,"no fishing")
+  }
+  
+  colorchoice <- blueorange[idx]
   
   sdsubsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
   sdsubsar <- sdsubsar +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
-              scale_colour_manual(values=blueorange,na.value = "grey50",name  ="Subsurf abrasion (dif)",
-                                  labels=c("> -2", "-2 to -0.5", "-0.5 to -0.1","-0.1 to 0.1","0.1 to 0.5","0.5 to 2","> 2"))
+              scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Subsurf abrasion (dif)",
+                                  labels=label_sub)
   sdsubsar <- sdsubsar +  theme(plot.background=element_blank(),
                           panel.background=element_blank(),
                           axis.text.y   = element_text(size=16),
@@ -338,7 +355,7 @@
   A13fig <- subset(A13fig,A13fig$Depth > -200)
   
   figmap <- ggplot() + geom_point(data=A13fig, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T) +
-    scale_colour_manual(values=yellowred,na.value = "grey50",name  ="Total value (euros)",
+    scale_colour_manual(values=yellowred,na.value = "white",name  ="Total value (euros)",
                         labels=c("0-100    ", expression(100-10^3),expression(10^3-10^4),expression(10^4-10^5)
                                  ,expression(paste(">",10^5,"     "))))
   figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
@@ -359,18 +376,18 @@
   # select all areas 5% 
   test <- subset(A13fig,A13fig$inout5 == 0)
   test$inout5 [test$inout5  == 0] <- NA
-  figmap_05 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout5)),na.rm=T,shape=15,size=.05)
+  figmap_05 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout5)),na.rm=T,shape=15,size=.15)
 
   # select all areas 10% 
   test <- subset(A13fig,A13fig$inout10 == 0)
   test$inout10 [test$inout10  == 0] <- NA
-  figmap_10 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout10)),na.rm=T,shape=15,size=.05)
+  figmap_10 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout10)),na.rm=T,shape=15,size=.15)
 
   pdf(paste(Assregion,AssYear,"figureA13.pdf",sep="_"),width=12,height=5.5) 
   print(grid.arrange(figmap_05,figmap_10, nrow = 1))
   dev.off()
   
-  jpeg(file = paste(Assregion,AssYear,"figureA13.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  jpeg(file = paste(Assregion,AssYear,"figureA13.jpeg",sep="_"), width=12, height=5.5,units ='in', res = 300)
   print(grid.arrange(figmap_05,figmap_10, nrow = 1))
   dev.off()
   
