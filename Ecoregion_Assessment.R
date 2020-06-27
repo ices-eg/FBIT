@@ -19,7 +19,7 @@ rm(list = ls())
   pathdir_nogit <- "C:/Users/pdvd/Online for git/FBIT - Fisheries restricted"
 
 ### select the assessment region and years
-  EcoReg  <- "Baltic Sea"
+  EcoReg  <- "Greater North Sea"
   Period <- 2009:2019 # period with fishing data to calculate impact
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])

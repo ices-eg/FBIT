@@ -306,8 +306,8 @@
 
 # Figure A.10
   load(paste(pathdir_prodFT,"FigureA10.RData",sep="/"))
-  state    <- (map_plot(A10fig,"state",AssYear,blueorange,Assregion))
-  avgstate <- (map_plot(A10fig,"state",AssPeriod,blueorange,Assregion))
+  state    <- (map_plot(A10fig,"state",AssYear,purples,Assregion))
+  avgstate <- (map_plot(A10fig,"state",AssPeriod,purples,Assregion))
 
   pdf(paste(Assregion,AssYear,"figureA10.pdf",sep="_"),width=12,height=5.5) 
   print(grid.arrange(state,avgstate, nrow = 1))
