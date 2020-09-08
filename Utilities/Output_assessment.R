@@ -139,12 +139,14 @@
     coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
   sdsubsar <- sdsubsar +   guides(colour = guide_legend(override.aes = list(size=5)))
 
-  pdf(paste(Assregion,AssYear,"figureA3.pdf",sep="_"),width=12,height=9) 
-  print(grid.arrange(sar,sdsar, subsar,sdsubsar, nrow = 2))
+## only save surface abrasion
+  pdf(paste(Assregion,AssYear,"figureA3.pdf",sep="_"),width=12,height=5.5) 
+  print(grid.arrange(sar,sdsar, nrow = 1))
   dev.off()
   
-  jpeg(file = paste(Assregion,AssYear,"figureA3.jpeg",sep="_"), width=12, height=9,units ='in', res = 300)
-  print(grid.arrange(sar,sdsar, subsar,sdsubsar, nrow = 2))
+## only save surface abrasion
+  jpeg(file = paste(Assregion,AssYear,"figureA3.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  print(grid.arrange(sar,sdsar, nrow = 1))
   dev.off()
 
 ##### Figure A.4
@@ -214,8 +216,63 @@
   axis(2,c(0,0.2,0.4,0.6,0.8,1),las=1)
   dev.off()
   
-# Figure A.6
-# same as Figure A1
+##### Figure A.6
+  load(paste(pathdir_prodFT,"FigureA6.RData",sep="/"))
+  
+  impact <- (map_plot(figA6,"impact",AssYear,bluegreen,Assregion))
+  
+  idx <- which(AssYear == AssPeriod)  
+  nam <- paste("state",AssPeriod[-idx],sep="_")
+  #figA6[,nam][is.na(figA6[,nam])] <- 0
+  figA6$dif_state <- figA6[,paste("state",AssYear,sep="_")] - apply(figA6[,nam], 1, mean)
+  figA6$dif_impact <-  figA6$dif_state*(-1)
+  
+  minlong <- round(min(figA6$longitude)-1)
+  maxlong <- round(max(figA6$longitude)+1)
+  minlat  <- round(min(figA6$latitude)-1)
+  maxlat  <- round(max(figA6$latitude)+1)
+  coordslim <- c(minlong,maxlong,minlat,maxlat)
+  coordxmap <- round(seq(minlong,maxlong,length.out = 4))
+  coordymap <- round(seq(minlat,maxlat,length.out = 4))
+  
+  quat<-c(-300,-0.5,-0.25,-0.1,0.1,0.25,0.5,300)
+  figA6$cat<- as.factor(cut(figA6$dif_impact,quat,right=T))
+  label_all <- c("> -0.5", "-0.5 to -0.25", "-0.25 to -0.1","-0.1 to 0.1","0.1 to 0.25","0.25 to 0.5","> 0.5")
+  idx <- which(!(table(figA6$cat)==0))
+  label_sub <- label_all[idx]
+  figA6$cat[figA6$Depth< -200]<- NA
+  
+  if((length(figA6$cat[is.na(figA6$cat)])>0)){
+    label_sub <- c(label_sub,"depth > 200 m")
+  }
+  
+  colorchoice <- blueorange[idx]
+  
+  sdimpact <- ggplot() + geom_point(data=figA6, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
+  sdimpact <- sdimpact +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
+    scale_colour_manual(values=colorchoice,na.value = "grey50",name  = "Impact (dif)",
+                        labels=label_sub)
+  sdimpact <- sdimpact +  theme(plot.background=element_blank(),
+                          panel.background=element_blank(),
+                          axis.text.y   = element_text(size=16),
+                          axis.text.x   = element_text(size=16),
+                          axis.title.y  = element_text(size=16),
+                          axis.title.x  = element_text(size=16),
+                          panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
+                          legend.text   = element_text(size=11),
+                          legend.title  = element_text(size=11))+
+    scale_x_continuous(breaks=coordxmap)+
+    scale_y_continuous(breaks=coordymap)+
+    coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
+  sdimpact <- sdimpact +   guides(colour = guide_legend(override.aes = list(size=5)))
+  
+  pdf(paste(Assregion,AssYear,"figureA6.pdf",sep="_"),width=12,height=5.5) 
+  print(grid.arrange(impact,sdimpact, nrow = 1))
+  dev.off()
+  
+  jpeg(file = paste(Assregion,AssYear,"figureA6.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  print(grid.arrange(impact,sdimpact, nrow = 1))
+  dev.off()
   
 #Figure A.7
   load(paste(pathdir_prodFT,"FigureA7.RData",sep="/"))
@@ -404,18 +461,22 @@
 
 # Table A3
   load(paste(pathdir_prodFT,"TableA3.RData",sep="/"))
-  colnames(A3table) <- c("MSFD habitat code","Extent of habitat (10^3 km^2)", "Landings 10^3 tonnes", "Value 10^6 euro",
-                         "Number of grid cells","Swept area 10^3 km^2","Proportion of grid cells fished (indicator 2)",
+  colnames(A3table) <- c("MSFD habitat code","Extent of habitat (10^3 km^2)", "Number of grid cells","Landings 10^3 tonnes",
+                         "Value 10^6 euro","Swept area 10^3 km^2","Proportion of grid cells fished (indicator 2)",
                        "Proportion of area fished (indicator 3)","Fishing intensity per year (indicator 1)",
                        "Average impact (indicator 6)", "Proportion of habitat fished with 90% of effort (indicator 4)")
+  
+  A3table[,c(2:11)] <- round(A3table[,c(2:11)], digits = 1)
+  
   write.csv(A3table, file= paste(Assregion,AssYear,"Table_3.csv",sep="_"), row.names=FALSE)
   
 # Table A4
   load(paste(pathdir_prodFT,"TableA4.RData",sep="/"))
-  col1 <- c("Area fished (10^3 km^2)", "Intensity (indicator 1)", "Aggregation of fishing pressure, smallest prop of grid cells with 90% effort (indicator 4)",
+  col1 <- c("Area fished (10^3 km^2)", "Intensity (indicator 1)", "Aggregation of fishing pressure smallest prop of grid cells with 90% effort (indicator 4)",
   "average impact (indicator 6)", "Landings 10^3 tonnes","Value 10^6 euro","Average impact/landings ratio (10^-2)",
   "Average impact/value ratio (10^-2)")
   A4table <- data.frame(Metier = col1, OT_CRU = A4table[,1], OT_REST = A4table[,2], TBB_ALL = A4table [,3])
+  A4table[,c(2:4)] <- round(A4table[,c(2:4)], digits = 1)
   write.csv(A4table, file= paste(Assregion,AssYear,"Table_4.csv",sep="_"), row.names=FALSE)
   
 # Table A5
@@ -425,5 +486,6 @@
                        "Fraction of total value from the lowest 5% area","Area with the least value constituting 10% of the swept area",
                        "Value of the lowest 10% area", "Fraction of total area with the least value constituting 10% of the swept area",
                        "Fraction of total value from the lowest 10% area")
+  
   write.csv(A5table, file= paste(Assregion,AssYear,"Table_5.csv",sep="_"), row.names=FALSE)
   

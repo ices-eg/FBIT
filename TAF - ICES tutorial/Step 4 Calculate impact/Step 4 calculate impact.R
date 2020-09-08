@@ -14,26 +14,21 @@
   setwd(paste(pathdir,"Step 3 Predict sensitivity",sep="/"))
   load("region_grid_sensitivity.RData")
   
-  # load available fishing data: The shapefile datasets for the OSPAR region are available at: https://doi.org/10.17895/ices.pub.2861 ####
-  workingdir<-paste(pathdir,"Step 4 Calculate impact/ICES.2017.OSPAR.Technical-Service-VMS-fishing-pressure",sep="/")
+  # load available fishing data: The shapefile datasets for the OSPAR region are available at:
+  # https://www.ices.dk/sites/pub/Publication%20Reports/Advice/2018/Special_requests/ospar.2018.14.pdf
+  # The example is using the data for the region of interest for 2016
   
-  # select a year and load swept area data
-  Period <- 2016
-  TBB   <- readOGR(dsn = workingdir ,layer=paste("OSPAR_intensity_Beam_",Period[1],sep=""))
-  OT    <- readOGR(dsn = workingdir ,layer=paste("OSPAR_intensity_Otter_",Period[1],sep=""))
-  TD    <- readOGR(dsn = workingdir ,layer=paste("OSPAR_intensity_Dredge_",Period[1],sep=""))
-  Seine <- readOGR(dsn = workingdir ,layer=paste("OSPAR_intensity_Seine_",Period[1],sep=""))
-    
+  setwd(paste(pathdir,"Step 4 Calculate impact",sep="/"))
+  load("MBCG_2016_area.RData") # fishing data subset 
+
   # link to grid via c-squares
-  bargrid <- cbind(bargrid, TBB@data[match(bargrid@data$csquares,TBB@data$c_square), c(5)])
-  bargrid <- cbind(bargrid, OT@data[match(bargrid@data$csquares,OT@data$c_square), c(5)])
-  bargrid <- cbind(bargrid, TD@data[match(bargrid@data$csquares,TD@data$c_square), c(5)])
-  bargrid <- cbind(bargrid, Seine@data[match(bargrid@data$csquares,Seine@data$c_square), c(5)])
-  
-  # add colnames 
-  nb <- ncol(bargrid@data)
-  colnames(bargrid@data)[(nb-3):nb] <- c("TBB_SurfSAR","OT_SurfSAR","TD_SurfSAR","Seine_SurfSAR")
-  
+  bargrid <- cbind(bargrid, fishing@data[match(bargrid@data$csquares,fishing@data$csquares), c(2)]) #TBB
+  bargrid <- cbind(bargrid, fishing@data[match(bargrid@data$csquares,fishing@data$csquares), c(3)]) #OT
+  bargrid <- cbind(bargrid, fishing@data[match(bargrid@data$csquares,fishing@data$csquares), c(4)]) #TD
+  bargrid <- cbind(bargrid, fishing@data[match(bargrid@data$csquares,fishing@data$csquares), c(5)]) #Seine
+  colnames(bargrid@data)[(ncol(bargrid)-3):ncol(bargrid)] <- c("TBB_SurfSAR","OT_SurfSAR","TD_SurfSAR","Seine_SurfSAR")
+
+  # now calculate the depletion rate per c-sq 
   Depl_TBB  <- 0.14 * bargrid@data$TBB_SurfSAR   ### data from Hiddink et al. PNAS 2017 Table S4
   Depl_OT   <- 0.06 * bargrid@data$OT_SurfSAR    ### data from Hiddink et al. PNAS 2017 Table S4
   Depl_TD   <- 0.20 * bargrid@data$TD_SurfSAR    ### data from Hiddink et al. PNAS 2017 Table S4
@@ -63,20 +58,4 @@
   
   # estimate state per MSFD habitat
   aggregate(state ~ MSFDhab, data=bargrid@data, mean)
-  
-  # make a map of swept areas, weight and value
-  Total  <- readOGR(dsn = workingdir ,layer=paste("OSPAR_intensity_total_",Period[1],sep=""))
-  bargrid <- cbind(bargrid, Total@data[match(bargrid@data$csquares,Total@data$c_square), c(5)])
-  bargrid <- cbind(bargrid, Total@data[match(bargrid@data$csquares,Total@data$c_square), c(6)])
-  bargrid <- cbind(bargrid, Total@data[match(bargrid@data$csquares,Total@data$c_square), c(7)])
-  bargrid <- cbind(bargrid, Total@data[match(bargrid@data$csquares,Total@data$c_square), c(8)])
-  
-  # add colnames 
-  nb <- ncol(bargrid@data)
-  colnames(bargrid@data)[(nb-3):nb] <- c("SurfaceSAR","Subsurface","totweight","totvalue")
-
-  map_plot(bargrid,"SurfaceSAR",bluegreen)  
-  map_plot(bargrid,"Subsurface",bluegreen)  
-  map_plot(bargrid,"totweight",yellowred)  
-  map_plot(bargrid,"totvalue",yellowred)  
   
