@@ -2,11 +2,11 @@
 # install libraries
   library(rgdal)
   library(sp)
-  library(vmstools)
   library(raster)
   
 # set folder directory
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/Step 1 Assign region of interest/Data layers/"
+  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial" # path to tutorial folder
+  path_env <- paste(pathdir,"Step 1 Assign region of interest/Data layers", sep="/") # path to environmental data layers 
   
 # assign area of interest
   gt<-(GridTopology(c(-1.975, 50.025), c(0.05, 0.05), c(200, 150))) # c(long, lat), c(cellsize long, lat), c(nb of grids long, lat)
@@ -20,13 +20,14 @@
   bargrid@bbox # make sure "min" is a whole number
 
 # assign c-squares
+  source(paste(pathdir, "Utilities/coords_to_csquare_VMStools.R",sep="/"))
   coord <- coordinates(bargrid)
   squares<-CSquare(coord[,1],coord[,2],0.05)
   bargrid@data$csquares <- squares
  
 # assign EEZ
-  shapeEEZ <- readOGR(dsn = paste(pathdir,"EEZ_land_union_v2_201410",sep="/") ,layer="EEZ_land_v2_201410")
-  #plot(shapeEEZ)
+  shapeEEZ <- readOGR(dsn = paste(path_env,"EEZ_land_union_v2_201410",sep="/") ,layer="EEZ_land_v2_201410")
+  plot(shapeEEZ)
   shapeEEZ@proj4string # check coordinates reference system
   shapeEEZ <- spTransform(shapeEEZ,CRS(proj4string(bargrid))) # make it similar to bargrid
   shapeEEZ@proj4string # check coordinates reference system again
@@ -34,7 +35,7 @@
   bargrid@data$EEZ <- tr$Country 
   
 # assign ICES ecoregions
-  shapeEcReg <- readOGR(dsn = paste(pathdir,"ICES_ecoregions",sep="/") ,layer="ICES_ecoregions_20171207_erase_ESRI")
+  shapeEcReg <- readOGR(dsn = paste(path_env,"ICES_ecoregions",sep="/") ,layer="ICES_ecoregions_20171207_erase_ESRI")
   #plot(shapeEcReg)
   shapeEcReg@proj4string # check coordinates reference system
   shapeEcReg <- spTransform(shapeEcReg,CRS(proj4string(bargrid))) # make it similar to bargrid
@@ -43,7 +44,7 @@
   bargrid@data$EcReg <- tr$Ecoregion 
 
 # assign MSFD habitats
-  fgdb <- paste(pathdir,"EUSM2019_EUNIS_BroadscaleModel.gdb", sep="/")
+  fgdb <- paste(path_env,"EUSM2019_EUNIS_BroadscaleModel.gdb", sep="/")
   subset(ogrDrivers(), grepl("GDB", name))
   fc_list <- ogrListLayers(fgdb)
   print(fc_list)
@@ -62,14 +63,14 @@
   bargrid@data$MSFDhab<-tr$MSFD_BBHT 
   
 # save bargrid
-  setwd(pathdir)
+  setwd(path_env)
   save(bargrid,file="region_grid.RData")  
   
 # remove big file(s)
   rm(EUSeaMap2019)
   
 # assign OSPAR reporting units
-  fgdb <- paste(pathdir,"OSPAR_Reporting_Units_20180813.gdb", sep="/")
+  fgdb <- paste(path_env,"OSPAR_Reporting_Units_20180813.gdb", sep="/")
   subset(ogrDrivers(), grepl("GDB", name))
   fc_list <- ogrListLayers(fgdb)
   print(fc_list)
@@ -89,6 +90,6 @@
   bargrid <- subset(bargrid,!(is.na(bargrid@data$MSFDhab)))
   
 # save bargrid
-  setwd(pathdir)
+  setwd(path_env)
   save(bargrid,file="region_grid.RData")  
   

@@ -98,9 +98,9 @@
 ################
   figA3 <- Region@data
   nam <- paste("subsurface_sar",AssPeriod,sep="_")
-  figA3 <- cbind(figA3, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
+  figA3 <- cbind(figA3, Fisheries[match(figA3$csquares,Fisheries$csquares), c(nam)])
   nam <- paste("surface_sar",AssPeriod,sep="_")
-  figA3 <- cbind(figA3, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
+  figA3 <- cbind(figA3, Fisheries[match(figA3$csquares,Fisheries$csquares), c(nam)])
   save(figA3, file="FigureA3.RData")
   
 #####
@@ -268,6 +268,14 @@
 
   save(A5dat, file="FigureA5.RData")
 
+#####
+# Figure A.6
+#################
+  figA6 <- Region@data
+  nam <- paste("state",AssPeriod,sep="_")
+  figA6 <- cbind(figA6, State_reg[match(figA6$csquares,State_reg$Fisheries.csquares), c(nam)])
+  save(figA6, file="FigureA6.RData")
+  
 #####
 # Figure A.7
 ################
