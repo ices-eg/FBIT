@@ -47,7 +47,7 @@
     }
   
   bargrid@data$state <- state
-  
+
   # plot state as a function of total depletion
   plot(bargrid@data$state~bargrid@data$Depl_tot,ylab="State (PD model)",xlab="Depletion (SAR*d)",las=1)
   
@@ -55,7 +55,7 @@
   setwd(paste(pathdir,"Utilities",sep="/"))
   source("map_plot.R") # warnings are okay
   map_plot(bargrid,"state",purples)  
-  
+
   # estimate state per MSFD habitat
   aggregate(state ~ MSFDhab, data=bargrid@data, mean)
   
