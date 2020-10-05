@@ -1,5 +1,4 @@
 
-library(dplyr)
 library(lme4)
 
 # set folder directory
@@ -12,21 +11,17 @@ library(lme4)
 
 # summarize benthic data per sample ID and calculate the fraction
   namesCol <- c("Biomass","L1","L1_3","L3_10","L10")
-  indexcol <- which(names(datBen) %in% namesCol)
-  
-  statdat <- datBen %>% 
-             group_by(sample_ID) %>%
-             summarise_at (funs(sum(., na.rm = TRUE)), .vars= vars(indexcol))
-  statdat <- as.data.frame(statdat)
+  statdat <- aggregate(datBen[, namesCol], by= list(datBen$sample_ID), FUN=function(x){sum(x, na.rm=T)})
   statdat[,c(3:6)] <- statdat[,c(3:6)]/statdat$Biomass
     
 # now link to environmental conditions
   statEnv <- read.csv(file="Env_Data_tutorial.csv",header=T,sep=";")  
-  statEnv <- cbind(statEnv,statdat[match(statEnv$ID,statdat$sample_ID), c(3:6)])
+  statEnv <- cbind(statEnv,statdat[match(statEnv$ID,statdat$Group.1), c(3:6)])
   
 # select only MSFD habitats with multiple observations
   table(statEnv$MSFDhab)
-  statEnv <- subset(statEnv,statEnv$MSFDhab %in% c("Circalittoral sand","Offshore circalittoral mud","Offshore circalittoral sand"))
+  statEnv <- subset(statEnv,statEnv$MSFDhab %in% 
+                      c("Circalittoral sand","Offshore circalittoral mud","Offshore circalittoral sand"))
   
 # now prepare for statistical analysis
   
