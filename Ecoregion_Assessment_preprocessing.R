@@ -12,7 +12,7 @@ pathdir_nogit <- "C:/Users/pdvd/Online for git"
 #dir.create(paste("FBIT - Fisheries restricted"))
 pathdir_nogit <- paste(pathdir_nogit,"FBIT - Fisheries restricted",sep="/")
 
-EcoReg  <- "Baltic Sea"
+EcoReg  <- "Bay of Biscay and the Iberian Coast"
 Period <- 2009:2018 # period with fishing data to calculate impact
 
 ### get fishing data
