@@ -35,13 +35,13 @@
       }
       if (length(year) == 1){
         tr<-filedata[,c(YearNames)]
-        yr <- paste("Surface abrasion" ,year[1])
+        yr <- paste("Surface abrasion \n" ,year[1])
       } else {
         tr<-filedata[,c(YearNames)]
         tr[is.na(tr)]<-0
         tr<-rowMeans(tr[,c(YearNames)])  
         tr[tr==0]<-NA
-        yr <- paste("Surface abrasion" ,year[1],"-",year[length(year)])
+        yr <- paste("Surface abrasion \n" ,year[1],"-",year[length(year)])
       }
      
       quat<-c(-1,0,0.1,0.5,1,5,10,100)
@@ -179,10 +179,15 @@
       
       quat<-c(0.1,2.5,3,3.5,4,5,6,8,1000000)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
+      filedata$cat[filedata$Depth< -200]<- NA
       label_all <- c("<2.5", "2.5-3","3-3.5","3.5-4","4-5","5-6","6-8",">8")
       idx <- which(!(table(filedata$cat)==0))
       label_sub <- label_all[idx]
 
+      if((length(filedata$cat[is.na(filedata$cat)])>0)){
+        label_sub <- c(label_sub,"depth > 200 m")
+      }
+      
       colorchoice <- colorchoice[idx]
       
       figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
@@ -271,10 +276,10 @@
           yr <- paste("State (PD model) \n" ,year[1],"-",year[length(year)])
         }
         
-      quat<-c(-1,0,0.1,0.3,0.5,0.7,0.9,1.01)
-      filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
+      quat<-c(-1,0,0.1,0.2,0.3,0.5,0.7,1.01)
+      filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
       filedata$cat[filedata$Depth< -200]<- NA
-      label_all <- c("-1-0","0-0.1","0.1-0.3","0.3-0.5","0.5-0.7","0.7-0.9","0.9-1")
+      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.7","0.9-1")
       idx <- which(!(table(filedata$cat)==0))
       label_sub <- label_all[idx]
       
@@ -323,10 +328,10 @@
     
     tr <- 1-tr ### calculate impact
     
-    quat<-c(-1,0,0.1,0.3,0.5,0.7,0.9,1.01)
-    filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
+    quat<-c(-1,0,0.1,0.2,0.3,0.5,1.01)
+    filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
     filedata$cat[filedata$Depth< -200]<- NA
-    label_all <- c("-1-0","0-0.1","0.1-0.3","0.3-0.5","0.5-0.7","0.7-0.9","0.9-1")
+    label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-1")
     idx <- which(!(table(filedata$cat)==0))
     label_sub <- label_all[idx]
     
@@ -334,7 +339,7 @@
       label_sub <- c(label_sub,"depth > 200 m")
     }
     
-    colorchoice <- colorchoice[idx-1]
+    colorchoice <- colorchoice[idx]
     
     figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
       scale_colour_manual(values=colorchoice,na.value = "grey50",name  =yr,

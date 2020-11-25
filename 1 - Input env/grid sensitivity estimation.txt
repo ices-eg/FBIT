@@ -1,0 +1,22 @@
+
+
+*** Greater North Sea ***
+Sensitivity (longevity,slope,intercept) estimations follow model predictions of Rijnsdorp et al. 2018 Ecol App.
+
+Sediment data: Wilson et al. 2018 A synthetic map of the north-west European Shelf sedimentary
+Shear stress data: Hiddink et al. 2006 (original data from J Aldridge) -- Cumulative impacts of seabed trawl disturbance on benthic biomass, production, and species richness in different habitats.
+Depth data is taken from EmodNet bathymetry downloaded Spring 2020 (average depth per c-square)
+
+For Skagerrak, no sediment data was available via Wilson. Jenkins global database is used. Jenkins, C. 1997. Building offshore soils databases. Sea Technology,
+38: 25–28. 
+
+For Kattegat, longevity,slope,intercept were taken from van Denderen et al. 2020 ICES J (which included data in the Kattegat, whereas Rijnsdorp benthic data was mainly from Southern part of the North Sea)
+
+
+*** Baltic Sea ***
+Sensitivity (longevity,slope,intercept) estimations follow model predictions of van Denderen et al. 2020 ICES J 
+(available via github: https://github.com/Dvandenderen/Baltic-benthic-status)
+
+Depth was extracted from the Baltic Sea Hydrographic Commission (2013).
+Wave exposure at the seabed was derived following the principles of Bekkby et al. (2008) GIS modeling of wave exposure at the seabed (contact person E. Virtanen)
+Bottom salinity data were obtained from the ICES data portal and interpolated

@@ -37,7 +37,11 @@
   coordxmap <- round(seq(minlong,maxlong,length.out = 4))
   coordymap <- round(seq(minlat,maxlat,length.out = 4))
   
-  figmap <- ggplot() + geom_point(data=Habitat, aes(x=longitude, y=latitude, colour=MSFD),shape=15,size=.05,na.rm=T)
+  nb.cols <- length(unique(Habitat$MSFD))
+  mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
+  
+  figmap <- ggplot() + geom_point(data=Habitat, aes(x=longitude, y=latitude, colour=MSFD),
+                                  shape=15,size=.05,na.rm=T ) +  scale_colour_manual(values=mycolors,na.value = "grey50")
   figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
   figmap <- figmap +  theme(plot.background=element_blank(),
                             panel.background=element_blank(),
@@ -362,17 +366,17 @@
   dev.off()
 
 # Figure A.10
-  load(paste(pathdir_prodFT,"FigureA10.RData",sep="/"))
-  state    <- (map_plot(A10fig,"state",AssYear,purples,Assregion))
-  avgstate <- (map_plot(A10fig,"state",AssPeriod,purples,Assregion))
+  # load(paste(pathdir_prodFT,"FigureA10.RData",sep="/"))
+  # state    <- (map_plot(A10fig,"state",AssYear,purples,Assregion))
+  # avgstate <- (map_plot(A10fig,"state",AssPeriod,purples,Assregion))
 
-  pdf(paste(Assregion,AssYear,"figureA10.pdf",sep="_"),width=12,height=5.5) 
-  print(grid.arrange(state,avgstate, nrow = 1))
-  dev.off()
+  # pdf(paste(Assregion,AssYear,"figureA10.pdf",sep="_"),width=12,height=5.5) 
+  # print(grid.arrange(state,avgstate, nrow = 1))
+  # dev.off()
   
-  jpeg(file = paste(Assregion,AssYear,"figureA10.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
-  print(grid.arrange(state,avgstate, nrow = 1))
-  dev.off()
+  # jpeg(file = paste(Assregion,AssYear,"figureA10.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  # print(grid.arrange(state,avgstate, nrow = 1))
+  # dev.off()
   
 
 # Figure A.11
@@ -466,26 +470,22 @@
                        "Proportion of area fished (indicator 3)","Fishing intensity per year (indicator 1)",
                        "Average impact (indicator 6)", "Proportion of habitat fished with 90% of effort (indicator 4)")
   
-  A3table[,c(2:11)] <- round(A3table[,c(2:11)], digits = 1)
+  A3table[,c(2:11)] <- round(A3table[,c(2:11)], digits = 2)
   
   write.csv(A3table, file= paste(Assregion,AssYear,"Table_3.csv",sep="_"), row.names=FALSE)
   
 # Table A4
   load(paste(pathdir_prodFT,"TableA4.RData",sep="/"))
-  col1 <- c("Area fished (10^3 km^2)", "Intensity (indicator 1)", "Aggregation of fishing pressure smallest prop of grid cells with 90% effort (indicator 4)",
-  "average impact (indicator 6)", "Landings 10^3 tonnes","Value 10^6 euro","Average impact/landings ratio (10^-2)",
-  "Average impact/value ratio (10^-2)")
-  A4table <- data.frame(Metier = col1, OT_CRU = A4table[,1], OT_REST = A4table[,2], TBB_ALL = A4table [,3])
-  A4table[,c(2:4)] <- round(A4table[,c(2:4)], digits = 1)
+  A4table <- round(A4table, digits = 2)
   write.csv(A4table, file= paste(Assregion,AssYear,"Table_4.csv",sep="_"), row.names=FALSE)
   
 # Table A5
   load(paste(pathdir_prodFT,"TableA5.RData",sep="/"))
   colnames(A5table) <- c("MSFD habitat code", "Total area km^2","Total value euro","Area with the least value constituting 5% of the swept area",
-                       "Value of the lowest 5% area", "Fraction of total area with the least value constituting 5% of the swept area",
+                        "Value of the lowest 5% area", "Fraction of total area with the least value constituting 5% of the swept area",
                        "Fraction of total value from the lowest 5% area","Area with the least value constituting 10% of the swept area",
-                       "Value of the lowest 10% area", "Fraction of total area with the least value constituting 10% of the swept area",
-                       "Fraction of total value from the lowest 10% area")
+                        "Value of the lowest 10% area", "Fraction of total area with the least value constituting 10% of the swept area",
+                        "Fraction of total value from the lowest 10% area")
   
   write.csv(A5table, file= paste(Assregion,AssYear,"Table_5.csv",sep="_"), row.names=FALSE)
   
