@@ -17,6 +17,9 @@ R-script for a regional assessment of different ICES marine ecoregions from WKFB
 ### Longevity prediction Baltic Sea
 •	Parameterization of the biomass longevity composition of the benthic community is taken from van Denderen et al. (2020) ICES journal of Marine Science
 
+### Longevity prediction of Celtic Seas and Bay of Biscay and the Iberian Coast
+•	Not available; one value assumed as test case
+
 ### Impact/state prediction
 •	The population dynamic model is first described in Pitcher et al. (2017) Methods in Ecology and Evolution.
 
