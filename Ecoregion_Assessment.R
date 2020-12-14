@@ -1,30 +1,21 @@
 rm(list = ls())
 
-### libraries needed
-  library(rgdal)
-  library(dplyr)
-  library(rje)
-  library(ggplot2)
-  library(RColorBrewer)
-  library(rworldmap)
-  library(rworldxtra)
-  library(broom)
-  library(latex2exp)
-  library(gridExtra)
-
 ### github folder
   pathdir <- "C:/Users/pdvd/Online for git/FBIT"
   
 ### folder for restricted data
   pathdir_nogit <- "C:/Users/pdvd/Online for git/FBIT - Fisheries restricted"
 
+### get all libraries to run the work
+  source(paste(pathdir,"Utilities/Libraries_FBIT.R",sep="/"))
+  
 ### select the assessment region and years
-  EcoReg  <- "Greater North Sea"
-  Period <- 2009:2019 # period with fishing data to calculate impact
+  EcoReg  <- "Bay of Biscay and the Iberian Coast"
+  Period <- 2009:2018 # period with fishing data to calculate impact
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])
-  AssYear <- 2019 # year to be assessed
-  AssPeriod <- 2014:2019 # assessment period /typically  6 years
+  AssYear <- 2018 # year to be assessed
+  AssPeriod <- 2013:2018 # assessment period /typically  6 years
   
 ### load processed file, with longevity and state/impact 
   load(paste(pathdir_nogit,paste(EcoReg,"state.RData",sep="_"),sep="/")) 

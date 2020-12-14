@@ -47,8 +47,8 @@
   TA1dat$sweptarea <- TA1dat[,SSAR_year]*TA1dat$area_sqkm
   ind1 <- sum(TA1dat$sweptarea,na.rm=T)/sum(TA1dat$area_sqkm)
 
-# indicator 2 proportion of grid cells fished (fished irrespective of swept area > 0.001)
-  ind2 <- length(which(TA1dat[,SSAR_year]>0.001))/nrow(TA1dat)
+# indicator 2 proportion of grid cells fished (fished irrespective of swept area > 0)
+  ind2 <- length(which(TA1dat[,SSAR_year]>0))/nrow(TA1dat)
 
 # indicator 3 proportion of area fished
   TA1dat$sweptarea2 <- TA1dat$sweptarea
@@ -123,7 +123,7 @@
   colnames(TA3dat)[ncol(TA3dat)] <- state_year
   
   TA3dat$sweptarea <- TA3dat[,SSAR_year]*TA3dat$area_sqkm
-  TA3dat$propgridfished <- ifelse(TA3dat[,SSAR_year] > 0.001,1,0)
+  TA3dat$propgridfished <- ifelse(TA3dat[,SSAR_year] > 0,1,0)
   TA3dat$propswept <- TA3dat$sweptarea
   TA3dat$propswept <- ifelse(TA3dat$sweptarea > TA3dat$area_sqkm,TA3dat$area_sqkm,TA3dat$sweptarea)
   
@@ -282,10 +282,11 @@
   A7dat <- subset(Region@data,Region@data$Depth >= -200 & Region@data$Depth < 0)
   stateNames <- paste("state",Period,sep="_")
   A7dat <- cbind(A7dat, State_reg[match(A7dat$csquares,State_reg$Fisheries.csquares), c(stateNames)])
- 
+  A7dat[,c(stateNames)][is.na(A7dat[,c(stateNames)])] <- 1
+  
 # left panel
   indexcol <- which(names(A7dat) %in% stateNames)
-  All = apply( A7dat[, indexcol], 2, FUN=function(x){mean(x, na.rm=T)})
+  All = apply( A7dat[, indexcol], 2, FUN=function(x){mean(x)})
 
 # and calculate for most common habitat types
   nam <- c("MSFD",stateNames)
@@ -294,7 +295,7 @@
     select(all_of(indexcol)) %>%
     filter(MSFD %in% c(mostcommonMSFD))
   indexcol <- which(names(AvgMSFD) %in% stateNames)
-  AvgMSFD2 = aggregate( AvgMSFD[, indexcol], by= list(AvgMSFD$MSFD), FUN=function(x){mean(x, na.rm=T)})
+  AvgMSFD2 = aggregate( AvgMSFD[, indexcol], by= list(AvgMSFD$MSFD), FUN=function(x){mean(x)})
   names(AvgMSFD2)= 'MSFD'
   AvgMSFD2<-as.data.frame(AvgMSFD2)
 
@@ -304,6 +305,7 @@
 # right panel
   A7right <-as.data.frame(matrix(data=NA,ncol=5,nrow=length(Period)))
 
+  mostcommonMSFD <- sort(mostcommonMSFD)
   rown<-c()
   for (i in 1:length(Period)){
     nyear <-  paste("state",Period[i],sep="_")
@@ -357,98 +359,88 @@
 ################
   datT4 <- subset(Region@data,Region@data$Depth >= -200  & Region@data$Depth < 0)
   
-  ## get surface sar for OTREST
-  gearnames <- c(paste("OTDMF_surface_sar",AssYear,sep="_"),paste("OTMIX_surface_sar",AssYear,sep="_"),paste("OTMIXDMFBEN_surface_sar",AssYear,sep="_"),
-                 paste("OTMIXCRUDMF_surface_sar",AssYear,sep="_"), paste("OTSPF_surface_sar",AssYear,sep="_"))
+  ## get surface sar/ tot weight /tot value for OTREST
+  gears     <- c("OT_MIX","OT_MIX_DMF_BEN","OT_MIX_DMF_PEL","OT_DMF","OT_SPF")
+  gearnames <- c(paste(gears,"surface_sar",AssYear,sep="_"))
   datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
-  OTREST_SurfaceSAR <- rowSums(datT4[,gearnames],na.rm=T)
+  datT4$OTREST_SurfaceSAR <- rowSums(datT4[,gearnames],na.rm=T)
   
-  ## get totweight for OTREST
-  gearnames <- c(paste("OTDMF_total_weight",AssYear,sep="_"),paste("OTMIX_total_weight",AssYear,sep="_"),paste("OTMIXDMFBEN_total_weight",AssYear,sep="_"),
-                 paste("OTMIXCRUDMF_total_weight",AssYear,sep="_"), paste("OTSPF_total_weight",AssYear,sep="_"))
+  gearnames <- c(paste(gears,"total_weight",AssYear,sep="_"))
   datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
-  OTREST_totweight <- rowSums(datT4[,gearnames],na.rm=T)
+  datT4$OTREST_totweight <- rowSums(datT4[,gearnames],na.rm=T)
   
-  ## get totvalue for OTREST
-  gearnames <- c(paste("OTDMF_total_value",AssYear,sep="_"),paste("OTMIX_total_value",AssYear,sep="_"),paste("OTMIXDMFBEN_total_value",AssYear,sep="_"),
-                 paste("OTMIXCRUDMF_total_value",AssYear,sep="_"), paste("OTSPF_total_value",AssYear,sep="_"))
+  gearnames <- c(paste(gears,"total_value",AssYear,sep="_"))
   datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
-  OTREST_totvalue  <- rowSums(datT4[,gearnames],na.rm=T)
+  datT4$OTREST_totvalue <- rowSums(datT4[,gearnames],na.rm=T)
   
-  OTREST <- data.frame(OTREST_SurfaceSAR,OTREST_totweight,OTREST_totvalue)
-  colnames(OTREST) <- c(paste("OTREST","surface_sar",AssYear,sep="_"),paste("OTREST","total_weight",AssYear,sep="_"),paste("OTREST","total_value",AssYear,sep="_"))
-  datT4 <- cbind(datT4,OTREST)
-
-  ## get same values for OTCRU
-  gearnames <- c(paste("OTCRU_total_value",AssYear,sep="_"),paste("OTCRU_total_weight",AssYear,sep="_"),paste("OTCRU_surface_sar",AssYear,sep="_"))
+  gearnames <- c(paste("state_OTREST",AssYear, sep="_"))
+  datT4 <- cbind(datT4, State_reg[match(datT4$csquares,State_reg$Fisheries.csquares), c(gearnames)])
+  colnames(datT4)[ncol(datT4)] <- "OTREST_state"
+  
+  ## get surface sar/ tot weight /tot value for OTCRU
+  gears     <- c("OT_CRU","OT_MIX_CRU","OT_MIX_CRU_DMF")
+  gearnames <- c(paste(gears,"surface_sar",AssYear,sep="_"))
   datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
-  datT4[,gearnames][is.na(datT4[,gearnames])] <- 0
-        
-  ## get same values for TBB
-  gearnames <- c(paste("TBB_total_value",AssYear,sep="_"),paste("TBB_total_weight",AssYear,sep="_"),paste("TBB_surface_sar",AssYear,sep="_"))
-  datT4 <- cbind(datT4, Fisheries[match(datT4$csquares,Fisheries$csquares), c(gearnames)])
-  datT4[,gearnames][is.na(datT4[,gearnames])] <- 0
+  datT4$OTCRU_SurfaceSAR <- rowSums(datT4[,gearnames],na.rm=T)
   
-  ## get state values for OTREST, OTCRU and TBB
-  statenames <- c(paste("state_TBB",AssYear,sep="_"),paste("state_OTCRU",AssYear,sep="_"),paste("state_OTREST",AssYear,sep="_"))
-  datT4 <- cbind(datT4, State_reg[match(datT4$csquares,State_reg$Fisheries.csquares), c(statenames)])
+  gearnames <- c(paste(gears,"total_weight",AssYear,sep="_"))
+  datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
+  datT4$OTCRU_totweight <- rowSums(datT4[,gearnames],na.rm=T)
   
-  # get the names for the assessment year
-  SSAR_TBB_year <- paste("TBB","surface_sar",AssYear,sep="_"); state_TBB_year <- paste("state","TBB",AssYear,sep="_")
-  weight_TBB_year <- paste("TBB","total_weight",AssYear,sep="_"); value_TBB_year <- paste("TBB","total_value",AssYear,sep="_")
-  SSAR_OTCRU_year <- paste("OTCRU","surface_sar",AssYear,sep="_"); state_OTCRU_year <- paste("state","OTCRU",AssYear,sep="_")
-  weight_OTCRU_year <- paste("OTCRU","total_weight",AssYear,sep="_"); value_OTCRU_year <- paste("OTCRU","total_value",AssYear,sep="_")
-  SSAR_OTREST_year <- paste("OTREST","surface_sar",AssYear,sep="_"); state_OTREST_year <- paste("state","OTREST",AssYear,sep="_")
-  weight_OTREST_year <- paste("OTREST","total_weight",AssYear,sep="_"); value_OTREST_year <- paste("OTREST","total_value",AssYear,sep="_")
+  gearnames <- c(paste(gears,"total_value",AssYear,sep="_"))
+  datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
+  datT4$OTCRU_totvalue <- rowSums(datT4[,gearnames],na.rm=T)
   
-  datT4[,SSAR_TBB_year][is.na(datT4[,SSAR_TBB_year])] <- 0
-  datT4[,SSAR_OTCRU_year][is.na(datT4[,SSAR_OTCRU_year])] <- 0
-  datT4[,SSAR_OTREST_year][is.na(datT4[,SSAR_OTREST_year])] <- 0
+  gearnames <- c(paste("state_OTCRU",AssYear, sep="_"))
+  datT4 <- cbind(datT4, State_reg[match(datT4$csquares,State_reg$Fisheries.csquares), c(gearnames)])
+  colnames(datT4)[ncol(datT4)] <- "OTCRU_state"
   
-  # Area fished
-  TBBsweptarea <- datT4[,SSAR_TBB_year]*datT4$area_sqkm
-  OTCRUsweptarea <- datT4[,SSAR_OTCRU_year]*datT4$area_sqkm
-  OTRESTsweptarea <- datT4[,SSAR_OTREST_year]*datT4$area_sqkm
-  A4table <- c(sum( OTCRUsweptarea),sum(OTRESTsweptarea),sum(TBBsweptarea))/1000
+  ## get surface sar/ tot weight /tot value for TBB
+  gears     <- c("TBB_CRU","TBB_DMF","TBB_MOL")
+  gearnames <- c(paste(gears,"surface_sar",AssYear,sep="_"))
+  datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
+  datT4$TBB_SurfaceSAR <- rowSums(datT4[,gearnames],na.rm=T)
   
-  # Intensity of area fished > 0
-  TBB_T4 <- subset(datT4,datT4[,c(SSAR_TBB_year)] > 0) 
-  OTCRU_T4 <- subset(datT4,datT4[,c(SSAR_OTCRU_year)] > 0) 
-  OTREST_T4 <- subset(datT4,datT4[,c(SSAR_OTREST_year)] > 0) 
-  A4table <- rbind(A4table, c(mean(OTCRU_T4[,SSAR_OTCRU_year]),mean(OTREST_T4[,SSAR_OTREST_year] ),mean(TBB_T4[,SSAR_TBB_year])))
+  gearnames <- c(paste(gears,"total_weight",AssYear,sep="_"))
+  datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
+  datT4$TBB_totweight <- rowSums(datT4[,gearnames],na.rm=T)
   
-  # Aggregation of fishing pressure (90% of fishing effort)
-  TBB_T4 <- TBB_T4[order(TBB_T4[,SSAR_TBB_year],decreasing = T),]
-  TBB_T4$cumSSAR <- cumsum(TBB_T4[,SSAR_TBB_year])
-  TBB_T4$cumSSAR <- TBB_T4$cumSSAR / sum(TBB_T4[,SSAR_TBB_year])
-  tb09 <- ifelse(nrow(TBB_T4)==0,NA,min(which (TBB_T4$cumSSAR > .9))/nrow(TBB_T4))
+  gearnames <- c(paste(gears,"total_value",AssYear,sep="_"))
+  datT4 <- cbind(datT4, FisheriesMet[match(datT4$csquares,FisheriesMet$csquares), c(gearnames)])
+  datT4$TBB_totvalue <- rowSums(datT4[,gearnames],na.rm=T)
   
-  OTCRU_T4 <- OTCRU_T4[order(OTCRU_T4[,SSAR_OTCRU_year],decreasing = T),]
-  OTCRU_T4$cumSSAR <- cumsum(OTCRU_T4[,SSAR_OTCRU_year])
-  OTCRU_T4$cumSSAR <- OTCRU_T4$cumSSAR / sum(OTCRU_T4[,SSAR_OTCRU_year])
-  oc09 <- ifelse(nrow(OTCRU_T4)==0,NA,min(which (OTCRU_T4$cumSSAR > .9))/nrow(OTCRU_T4))
+  gearnames <- c(paste("state_TBB",AssYear, sep="_"))
+  datT4 <- cbind(datT4, State_reg[match(datT4$csquares,State_reg$Fisheries.csquares), c(gearnames)])
+  colnames(datT4)[ncol(datT4)] <- "TBB_state"
   
-  OTREST_T4 <- OTREST_T4[order(OTREST_T4[,SSAR_OTREST_year],decreasing = T),]
-  OTREST_T4$cumSSAR <- cumsum(OTREST_T4[,SSAR_OTREST_year])
-  OTREST_T4$cumSSAR <- OTREST_T4$cumSSAR / sum(OTREST_T4[,SSAR_OTREST_year])
-  ot09 <- ifelse(nrow(OTREST_T4)==0,NA, min(which (OTREST_T4$cumSSAR > .9))/nrow(OTREST_T4))
+  gears <- c("OTREST","OTCRU","TBB")
+  A4table <- as.data.frame(matrix(data=NA, ncol=length(gears), nrow = 7))
   
-  A4table <- rbind(A4table, c(oc09,ot09,tb09))
-  
-  # average impact
-  A4table <- rbind(A4table, c(1-mean(OTCRU_T4[,state_OTCRU_year]),1-mean(OTREST_T4[,state_OTREST_year]),1-mean(TBB_T4[,state_TBB_year])))
-  
-  # landings
-  A4table <- rbind(A4table, c(sum(OTCRU_T4[,weight_OTCRU_year],na.rm=T),sum(OTREST_T4[,weight_OTREST_year],na.rm=T),sum(TBB_T4[,weight_TBB_year],na.rm=T))/1000000)
-  
-  # value
-  A4table <- rbind(A4table, c(sum(OTCRU_T4[,value_OTCRU_year],na.rm=T),sum(OTREST_T4[,value_OTREST_year],na.rm=T),sum(TBB_T4[,value_TBB_year],na.rm=T))/1000000)
-  
-  # average impact/landings ratio (10^-2)
-  A4table <- rbind(A4table, A4table[4,]/A4table[5,]*100)
-  
-  # average impact/value (10^-2)
-  A4table <- rbind(A4table, A4table[4,]/A4table[6,]*100)
+  for (pp in 1:length(gears)){
+    datgear <- datT4
+    
+    nam_sar <- paste(gears[pp],"SurfaceSAR",sep="_")
+    datgear$sweptarea <- datgear[,nam_sar]*datgear$area_sqkm
+    A4table[1,pp] <- sum(datgear$sweptarea,na.rm=T)/1000
+    
+    nam_weight <- paste(gears[pp],"totweight",sep="_")
+    A4table[2,pp] <- sum(datgear[,nam_weight])/1000000
+    
+    nam_value <- paste(gears[pp],"totvalue",sep="_")
+    A4table[3,pp] <- sum(datgear[,nam_value])/1000000
+    
+    nam_state <- paste(gears[pp],"state",sep="_")
+    datgear$avgimpact <- 1- (datgear[,nam_state])
+    datgear <- subset(datgear,datgear[,nam_sar] >0)
+    A4table[4,pp] <- (sum(datgear[,nam_weight])/1000000) / sum(datgear$avgimpact)
+    A4table[5,pp] <- (sum(datgear[,nam_value])/1000000) / sum(datgear$avgimpact)
+    A4table[6,pp] <- (sum(datgear[,nam_weight])/1000000) / (sum(datgear$sweptarea,na.rm=T)/1000)
+    A4table[7,pp] <- (sum(datgear[,nam_value])/1000000) / (sum(datgear$sweptarea,na.rm=T)/1000)
+  }
+  colnames(A4table) <- gears
+  rownames(A4table) <- c("Area fished (1000 km2)","Landings (1000 tonnes)","Value (10^6 euro)",
+                         "Landings (1000 tonnes)/impact","Value (10^6 euro)/impact",
+                         "Landings (1000 tonnes)/Area fished (1000 km2)","Value (10^6 euro)/Area fished (1000 km2)")
   
   save(A4table, file="TableA4.RData")
 

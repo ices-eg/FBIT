@@ -1,9 +1,8 @@
-"Metier","OT_CRU","OT_REST","TBB_ALL"
-"Area fished (10^3 km^2)",0,91.9991065969438,0
-"Intensity (indicator 1)",NA,1.41778654697281,NA
-"Aggregation of fishing pressure, smallest prop of grid cells with 90% effort (indicator 4)",NA,0.349041095890411,NA
-"average impact (indicator 6)",NA,0.0672747959749582,NA
-"Landings 10^3 tonnes",0,36.7225708712438,0
-"Value 10^6 euro",0,32.5158008902349,0
-"Average impact/landings ratio (10^-2)",NA,0.183197402520745,NA
-"Average impact/value ratio (10^-2)",NA,0.206898781924704,NA
+"OTREST","OTCRU","TBB"
+71.75,0,0
+33.98,0,0
+29.51,0,0
+0.4,NA,NA
+0.35,NA,NA
+0.47,NA,NA
+0.41,NA,NA
