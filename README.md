@@ -1,5 +1,5 @@
 # FBIT
-Fisheries Benthic Impact Tools
+Fisheries Benthic Impact Tools.
 
 
 R-script for a regional assessment of different ICES marine ecoregions from WKFBIT. Output follows ICES demonstration product (2017) in “EU request on indicators of the pressure and impact of bottom-contacting fishing gear on the seabed, and of trade-offs in the catch and the value of landings “. Documentation on fishing and environmental input parameters, longevity predictions and state/impact predictions is found in WKFBIT report (http://doi.org/10.17895/ices.pub.5955). Some data sources are provided here:
