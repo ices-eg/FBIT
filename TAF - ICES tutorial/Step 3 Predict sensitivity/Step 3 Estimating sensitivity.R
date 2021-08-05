@@ -26,12 +26,13 @@
   coef_OCM <- modcoeff[3]
   coef_OCS <- modcoeff[4]
   
-  # for each grid cell we can predict longevity at a certain cumulative biomass
-  # for example show median longevity (50% of biomass is longer-living)
-  # use outcome of the statistical model -> Cumb ~ ll + MSFD + (1 | ID)
-  # longevity is log transformed in the model so backtransform --> exp(log(x)) = x
-  # cumulative biomass 0.5 needs a logit as the statistical model is binomial; 
-  # logit(p) == log(p/(1-p)) ; p = exp(A)/(1+exp(A))
+  # for each grid cell, longevity can now be predicted at a certain cumulative biomass
+  # for example we can show median longevity (medLong, see below) (the value where 50% of biomass is longer-living)
+  # to estimate longevity at a certain cumulative biomass:
+  # 1) the statistical model -- Cumb ~ ll + MSFD + (1 | ID) -- needs to be reshuffled
+  # 2) longevity is log transformed in the model so we backtransform --> exp(log(x)) = x
+  # 3) cumulative biomass 0.5 needs a logit as the statistical model is binomial; 
+  #     logit(p) == log(p/(1-p)) ; p = exp(A)/(1+exp(A))
   
   # prepare grid specific information to predict longevity at a certain location
   OCM <- ifelse(bargrid@data$MSFDhab == "Offshore circalittoral mud",1,0)
