@@ -15,15 +15,15 @@
   load(paste(pathdir_prodFT,"FigureA1.RData",sep="/"))
 
   sar    <- (map_plot(figA1,"surface_sar",AssYear,purples,Assregion))
-  impact <- (map_plot(figA1,"impact",AssYear,bluegreen,Assregion))
+  impact <- (map_plot(figA1,"impact",AssYear,sealand,Assregion))
   longevi <- (map_plot(figA1,"medlong",AssYear,sealand,Assregion))
   value  <- (map_plot(figA1,"total_value",AssYear,yellowred,Assregion))
   
-  pdf(paste(Assregion,AssYear,"figureA1.pdf",sep="_"),width=12,height=9) 
-  print(grid.arrange(sar,impact, longevi,value, nrow = 2))
-  dev.off()
+  #pdf(paste(Assregion,AssYear,"figureA1.pdf",sep="_"),width=12,height=9) 
+  #print(grid.arrange(sar,impact, longevi,value, nrow = 2))
+  #dev.off()
   
-  jpeg(file = paste(Assregion,AssYear,"figureA1.jpeg",sep="_"), width=12, height=9,units ='in', res = 300)
+  png(paste(Assregion,AssYear,"figureA1.png",sep="_"),width=12,height=9, units = "in", res = 150 ) 
   print(grid.arrange(sar,impact, longevi,value, nrow = 2))
   dev.off()
   
@@ -41,7 +41,7 @@
   mycolors <- colorRampPalette(brewer.pal(8, "Set2"))(nb.cols)
   
   figmap <- ggplot() + geom_point(data=Habitat, aes(x=longitude, y=latitude, colour=MSFD),
-                                  shape=15,size=.05,na.rm=T ) +  scale_colour_manual(values=mycolors,na.value = "grey50")
+                                  shape=15,size=.2,na.rm=T ) +  scale_colour_manual(values=mycolors,na.value = "grey50")
   figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
   figmap <- figmap +  theme(plot.background=element_blank(),
                             panel.background=element_blank(),
@@ -57,10 +57,10 @@
     coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
     figmap <- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
     
-    pdf(paste(Assregion,AssYear,"figureA2.pdf",sep="_"),width=12,height=6) 
+    png(paste(Assregion,AssYear,"figureA2.png",sep="_"),width=10,height=6, units = "in", res = 150 ) 
     print(figmap)
     dev.off()
-
+    
 ##### Figure A.3
   load(paste(pathdir_prodFT,"FigureA3.RData",sep="/"))
   
@@ -96,7 +96,7 @@
   
   colorchoice <- blueorange[idx]
   
-  sdsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
+  sdsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T)
   sdsar <- sdsar +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
            scale_colour_manual(values=colorchoice,na.value = "grey50",name  = "Surface abrasion (dif)",
                         labels=label_sub)
@@ -125,7 +125,7 @@
   
   colorchoice <- blueorange[idx]
   
-  sdsubsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
+  sdsubsar <- ggplot() + geom_point(data=figA3, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T)
   sdsubsar <- sdsubsar +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
               scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Subsurf abrasion (dif)",
                                   labels=label_sub)
@@ -144,46 +144,41 @@
   sdsubsar <- sdsubsar +   guides(colour = guide_legend(override.aes = list(size=5)))
 
 ## only save surface abrasion
-  pdf(paste(Assregion,AssYear,"figureA3.pdf",sep="_"),width=12,height=5.5) 
-  print(grid.arrange(sar,sdsar, nrow = 1))
-  dev.off()
-  
-## only save surface abrasion
-  jpeg(file = paste(Assregion,AssYear,"figureA3.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  png(paste(Assregion,AssYear,"figureA3.png",sep="_"),width=12,height=5.5, units = "in", res = 150 ) 
   print(grid.arrange(sar,sdsar, nrow = 1))
   dev.off()
 
 ##### Figure A.4
   load(paste(pathdir_prodFT,"FigureA4.RData",sep="/"))
-
-  pdf(paste(Assregion,AssYear,"figureA4.pdf",sep="_"),width=8,height=4) 
+  
+  png(paste(Assregion,AssYear,"figureA4.png",sep="_"),width=8,height=4, units = "in", res = 150) 
   par(mfrow=c(1,3))
   
   #left panel
   ma <- round(max(A4fig[[1]][,1:5]))
   left<-as.data.frame(A4fig[[1]])
-  plot(left[,1]~left$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,ma),
-       ylab="Trawling intensity (y-1)",xlab="Year")
+  plot(left[,1]~left$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,ma+0.5),
+       ylab="I-1: Average trawling intensity (y-1)",xlab="Year")
   lines(left[,2]~left$Year, col="red", type="o", lty=2)
   lines(left[,3]~left$Year, col="blue", type="o", lty=3)
   lines(left[,4]~left$Year, col="orange", type="o", lty=4)
   lines(left[,5]~left$Year, col="black", type="o", lty=5)
   axis(2,c(0,ma/2,ma),las=1)
-
+  
   # middle panel
   middle<-as.data.frame(A4fig[[2]])
   plot(middle[,1]~middle$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,1),
-       ylab="Proportion fished",xlab="Year")
+       ylab="I-3: Proportion of area fished",xlab="Year")
   lines(middle[,2]~middle$Year, col="red", type="o", lty=2)
   lines(middle[,3]~middle$Year, col="blue", type="o", lty=3)
   lines(middle[,4]~middle$Year, col="orange", type="o", lty=4)
   lines(middle[,5]~middle$Year, col="black", type="o", lty=5)
   axis(2,c(0,0.5,1),las=1)
-
+  
   # right panel
   right<-as.data.frame(A4fig[[3]])
   plot(right[,1]~right$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,1),
-       ylab="Proportion fished with 90% effort",xlab="Year")
+       ylab="I-4: Smallest  prop. of area with 90% of effort",xlab="Year")
   lines(right[,2]~right$Year, col="red", type="o", lty=2)
   lines(right[,3]~right$Year, col="blue", type="o", lty=3)
   lines(right[,4]~right$Year, col="orange", type="o", lty=4)
@@ -192,13 +187,12 @@
   
   legend(Period[1],1,legend=colnames(right[1:5]),bty = "n",
          col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=2)
-
   dev.off()
 
 # Figure A.5
   load(paste(pathdir_prodFT,"FigureA5.RData",sep="/"))
   
-  pdf(paste(Assregion,AssYear,"figureA5.pdf",sep="_"),width=5.5,height=4.5) 
+  png(paste(Assregion,AssYear,"figureA5.png",sep="_"),width=5.5,height=4.5, units = "in", res = 150) 
   plot(A5dat$sweptcumu~A5dat$indixcumu, xlab="Surface area \n(grid cells sorted from high to low trawling intensity)",
        ylab="Cumulative proportion",las=1,yaxt="n", lty=1, col="white", type="l")
   lines(x=c(-1,2),y=c(0.2,0.2),type="l",lty=4,lwd=0.2,col="light grey")
@@ -223,7 +217,7 @@
 ##### Figure A.6
   load(paste(pathdir_prodFT,"FigureA6.RData",sep="/"))
   
-  impact <- (map_plot(figA6,"impact",AssYear,bluegreen,Assregion))
+  impact <- (map_plot(figA6,"impact",AssYear,sealand,Assregion))
   
   idx <- which(AssYear == AssPeriod)  
   nam <- paste("state",AssPeriod[-idx],sep="_")
@@ -247,12 +241,12 @@
   figA6$cat[figA6$Depth< -200]<- NA
   
   if((length(figA6$cat[is.na(figA6$cat)])>0)){
-    label_sub <- c(label_sub,"depth > 200 m")
+    label_sub <- c(label_sub,"NA")
   }
   
   colorchoice <- blueorange[idx]
   
-  sdimpact <- ggplot() + geom_point(data=figA6, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.05,na.rm=T)
+  sdimpact <- ggplot() + geom_point(data=figA6, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T)
   sdimpact <- sdimpact +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey") +
     scale_colour_manual(values=colorchoice,na.value = "grey50",name  = "Impact (dif)",
                         labels=label_sub)
@@ -270,18 +264,14 @@
     coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
   sdimpact <- sdimpact +   guides(colour = guide_legend(override.aes = list(size=5)))
   
-  pdf(paste(Assregion,AssYear,"figureA6.pdf",sep="_"),width=12,height=5.5) 
-  print(grid.arrange(impact,sdimpact, nrow = 1))
-  dev.off()
-  
-  jpeg(file = paste(Assregion,AssYear,"figureA6.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
+  png(paste(Assregion,AssYear,"figureA6.png",sep="_"),width=12,height=5.5, units = "in", res = 150 ) 
   print(grid.arrange(impact,sdimpact, nrow = 1))
   dev.off()
   
 #Figure A.7
   load(paste(pathdir_prodFT,"FigureA7.RData",sep="/"))
   
-  pdf(paste(Assregion,AssYear,"figureA7.pdf",sep="_"),width=7,height=5) 
+  png(paste(Assregion,AssYear,"figureA7.png",sep="_"),width=7,height=5, units = "in", res = 150) 
   par(mfrow=c(1,2))
   
   #left panel
@@ -310,182 +300,72 @@
   dev.off()
 
 # Figure A.8
-  load(paste(pathdir_prodFT,"FigureA8_A9.RData",sep="/"))
+  load(paste(pathdir_prodFT,"FigureA8.RData",sep="/"))
   
-  dat<-cbind(A8_A9fig[,paste("state_OTCRU",AssYear,sep="_")],A8_A9fig[,paste("state_OTREST",AssYear,sep="_")],A8_A9fig[,paste("state_TBB",AssYear,sep="_")])
-  dat <- 1-dat # get impact
+  gears <- c("DRB_MOL","OT_CRU","OT_DMF","OT_MIX","OT_SPF","SDN_DMF","SSC_DMF","TBB_CRU","TBB_DMF","TBB_MOL")
   
-  pdf(paste(Assregion,AssYear,"figureA8.pdf",sep="_"),width=5.5,height=4.5) 
-  barplot(dat,beside=T,yaxt="n",xaxt="n",ylab="Impact (1-B/K)",ylim=c(0,0.4),xlab="Metier")
-  legend("topleft",
-         as.character(A8_A9fig$MSFD),
+  nam <- paste("state",gears[1],AssYear,sep="_")
+  Avgear <- data.frame(A8[, nam])
+  
+  for (q in 2:length(gears)){
+    nam <- paste("state",gears[q],AssYear,sep="_")
+    Avgear <- cbind(Avgear,data.frame(A8[, nam]))
+  }
+  colnames(Avgear) <- gears
+  
+  Avgear <- t(Avgear)
+  colnames(Avgear) <- A8[,1]
+  Avgear <- 1-Avgear # get impact
+  Avgear <- t(Avgear)
+
+  png(paste(Assregion,AssYear,"figureA8.png",sep="_"),width=12,height=4.5, units = "in", res = 150) 
+  par(mfrow=c(1,1),mar=c(4,5,2,2)+0.1)
+  
+  barplot(Avgear,beside=T,yaxt="n",xaxt="n",ylab="Impact (PD method)",ylim=c(0,0.3),xlab="Metier")
+  legend(30,0.25, as.character(A8$MSFD),
          fill = gray.colors(4),bty = "n")
-  axis(1,c(3,8,13),c("OT_cru","OT_rest","TBB_all"))
-  axis(2,c(0,0.2,0.4),las=1)
+  axis(1,c(seq(3, 48, length = 10)),gears) 
+  axis(2,c(0,0.15,0.3),las=1)
   box()
   dev.off()
   
-# Figure A.9
-  OT_CRU_col <- which(names(A8_A9fig) %in%  paste(rep("state_OTCRU",length(Period)),Period,sep="_"))
-  OT_REST_col <- which(names(A8_A9fig) %in%  paste(rep("state_OTREST",length(Period)),Period,sep="_"))
-  TBB_col <- which(names(A8_A9fig) %in%  paste(rep("state_TBB",length(Period)),Period,sep="_"))
-  
-  pdf(paste(Assregion,AssYear,"figureA9.pdf",sep="_"),width=6,height=6) 
-  par(mfrow=c(2,2))
-  
-  plot(Period,1-A8_A9fig[1,OT_CRU_col],type="o",ylim=c(0,0.4),xaxt="n",yaxt="n",xlab="year",
-       ylab="Impact (1-B/K)",lwd=2, main=as.character(A8_A9fig[1,1]))
-  lines(Period,1-A8_A9fig[1,OT_REST_col],lwd=2,col="red",type="o")
-  lines(Period,1-A8_A9fig[1,TBB_col],lwd=2,col="blue",type="o")
-  axis(1,2009:2016)
-  axis(2,c(0,0.2,0.4),las=1)
-  legend(x=Period[4],y=0.38,c("OT-cru","OT-rest","TBB-all"),col=c("black","red","blue"),
-         lty=1,bty = "n",lwd=2,y.intersp=0.8)
-  
-  plot(Period,1-A8_A9fig[2,OT_CRU_col],type="o",ylim=c(0,0.4),xaxt="n",yaxt="n",xlab="year",
-       ylab="Impact (1-B/K)",lwd=2, main=as.character(A8_A9fig[2,1]))
-  lines(Period,1-A8_A9fig[2,OT_REST_col],lwd=2,col="red",type="o")
-  lines(Period,1-A8_A9fig[2,TBB_col],lwd=2,col="blue",type="o")
-  axis(1,2009:2016)
-  axis(2,c(0,0.2,0.4),las=1)
-  
-  plot(Period,1-A8_A9fig[3,OT_CRU_col],type="o",ylim=c(0,0.4),xaxt="n",yaxt="n",xlab="year",
-       ylab="Impact (1-B/K)",lwd=2, main=as.character(A8_A9fig[3,1]))
-  lines(Period,1-A8_A9fig[3,OT_REST_col],lwd=2,col="red",type="o")
-  lines(Period,1-A8_A9fig[3,TBB_col],lwd=2,col="blue",type="o")
-  axis(1,2009:2016)
-  axis(2,c(0,0.2,0.4),las=1)
-  
-  plot(Period,1-A8_A9fig[4,OT_CRU_col],type="o",ylim=c(0,0.4),xaxt="n",yaxt="n",xlab="year",
-       ylab="Impact (1-B/K)",lwd=2, main=as.character(A8_A9fig[4,1]))
-  lines(Period,1-A8_A9fig[4,OT_REST_col],lwd=2,col="red",type="o")
-  lines(Period,1-A8_A9fig[4,TBB_col],lwd=2,col="blue",type="o")
-  axis(1,2009:2016)
-  axis(2,c(0,0.2,0.4),las=1)
-
-  dev.off()
-
-# Figure A.10
-  # load(paste(pathdir_prodFT,"FigureA10.RData",sep="/"))
-  # state    <- (map_plot(A10fig,"state",AssYear,purples,Assregion))
-  # avgstate <- (map_plot(A10fig,"state",AssPeriod,purples,Assregion))
-
-  # pdf(paste(Assregion,AssYear,"figureA10.pdf",sep="_"),width=12,height=5.5) 
-  # print(grid.arrange(state,avgstate, nrow = 1))
-  # dev.off()
-  
-  # jpeg(file = paste(Assregion,AssYear,"figureA10.jpeg",sep="_"), width=12, height=5,units ='in', res = 300)
-  # print(grid.arrange(state,avgstate, nrow = 1))
-  # dev.off()
-  
-
-# Figure A.11
-  # not included
-
-# Figure A.12
-#  load(paste(pathdir_prodFT,"FigureA12.RData",sep="/"))
-  
-#  pdf(paste(Assregion,AssYear,"figureA12.pdf",sep="_"),width=5.5,height=4.5) 
-#  plot(A12fig$footprop~A12fig$state_1,lwd=2,type="l",xlab="Threshold of status (> B/K)",
-#       ylab="Proportion of footprint", main="Proportion of c-squares status > B/K threshold",yaxt="n")
-#  lines(A12fig$footprop~A12fig$state_0.25,lwd=1)
-#  lines(A12fig$footprop~A12fig$state_0.5,lwd=1)
-#  lines(A12fig$footprop~A12fig$state_0.75,lwd=1)
-#  lines(A12fig$footprop~A12fig$state_1.25,lwd=1)
-#  lines(A12fig$footprop~A12fig$state_2,lwd=1)
-#  lines(A12fig$footprop~A12fig$state_4,lwd=1)
-#  text(0.2,0.65,"4x")
-#  text(0.9,0.9,"0.25x")
-#  axis(2,c(0,0.5,1),las=1)
-#  dev.off()
-  
-# Figure A.13
-  load(paste(pathdir_prodFT,"FigureA13.RData",sep="/"))
-  
-  minlong <- round(min(A13fig$longitude)-1)
-  maxlong <- round(max(A13fig$longitude)+1)
-  minlat  <- round(min(A13fig$latitude)-1)
-  maxlat  <- round(max(A13fig$latitude)+1)
-  coordslim <- c(minlong,maxlong,minlat,maxlat)
-  coordxmap <- round(seq(minlong,maxlong,length.out = 4))
-  coordymap <- round(seq(minlat,maxlat,length.out = 4))
-  
-  quat<-c(-1,0,100,1000,10000,100000,10000000)
-  A13fig$cat<- as.factor(cut(A13fig$AVGvalue,quat,right=FALSE))
-  
-  A13fig <- subset(A13fig,A13fig$Depth > -200)
-  
-  figmap <- ggplot() + geom_point(data=A13fig, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=.15,na.rm=T) +
-    scale_colour_manual(values=yellowred,na.value = "white",name  ="Total value (euros)",
-                        labels=c("0-100    ", expression(100-10^3),expression(10^3-10^4),expression(10^4-10^5)
-                                 ,expression(paste(">",10^5,"     "))))
-  figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
-  figmap <- figmap +  theme(plot.background=element_blank(),
-                            panel.background=element_blank(),
-                            axis.text.y   = element_text(size=16),
-                            axis.text.x   = element_text(size=16),
-                            axis.title.y  = element_text(size=16),
-                            axis.title.x  = element_text(size=16),
-                            panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
-                            legend.text   = element_text(size=11),
-                            legend.title  = element_text(size=11))+
-    scale_x_continuous(breaks=coordxmap)+
-    scale_y_continuous(breaks=coordymap)+
-    coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
-  figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
-  
-  # select all areas 5% 
-  test <- subset(A13fig,A13fig$inout5 == 0)
-  test$inout5 [test$inout5  == 0] <- NA
-  figmap_05 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout5)),na.rm=T,shape=15,size=.15)
-
-  # select all areas 10% 
-  test <- subset(A13fig,A13fig$inout10 == 0)
-  test$inout10 [test$inout10  == 0] <- NA
-  figmap_10 <- figmap +  geom_point(data=test, aes(x=longitude, y=latitude, colour=factor(inout10)),na.rm=T,shape=15,size=.15)
-
-  pdf(paste(Assregion,AssYear,"figureA13.pdf",sep="_"),width=12,height=5.5) 
-  print(grid.arrange(figmap_05,figmap_10, nrow = 1))
-  dev.off()
-  
-  jpeg(file = paste(Assregion,AssYear,"figureA13.jpeg",sep="_"), width=12, height=5.5,units ='in', res = 300)
-  print(grid.arrange(figmap_05,figmap_10, nrow = 1))
-  dev.off()
   
 ####################################################
 # Table A1
   load(paste(pathdir_prodFT,"TableA1.RData",sep="/"))
-  col1 <- c("1. Intensity", "2. Proportion of cells fished", "3. Proportion of area fished", "4. Aggregation of fishing pressure",
-          "5. Persistently unfished areas", "6. Average impact", "7. Proportion of area with impact < 0.2")
+  col1 <- c("Average intensity (I-1)", "Proportion of area in fished cells (I-2)", "Proportion of area fished per year (I-3)", 
+            "Smallest  prop. of area in fished cells with 90% of fishing effort (I-4)","Proportion of area in unfished cells (I-5)", 
+            "Average PD impact (I-6)", "Proportion of area with PD impact < 0.2 (I-7)")
+  A1table <- round(A1table, digits = 2)  
   A1table <- data.frame(Indicators = col1, values = A1table)
+  colnames(A1table) <- c("Indicators","0 to 200 m","200 to 800 m", "more than 800 m") 
+  
+  # remove areas deeper than 200 meter for overview of Greater North Sea
+  if (Assregion == "Greater North Sea"){
+    A1table[6:7,3:4] <- NA
+  }
+  
   write.csv(A1table, file= paste(Assregion,AssYear,"Table_1.csv",sep="_"), row.names=FALSE)
 
 # Table A2 
-# no data, not included
+  load(paste(pathdir_prodFT,"TableA2.RData",sep="/"))
+  A2table <- A2table[,c(1:6,9,8,7,10)]
+  
+  colnames(A2table) <- c("MSFD broad habitat type","Extent of habitat (1000 km2)", "Number of grid cells",
+                         "Landings 1000 tonnes","Value 10^6^ euro","Swept area 1000 km2","Average fishing intensity (I-1)",
+                         "Prop. of area in fished grid cells (I-2)", "Prop. of area fished per year (I-3)",
+                         "Smallest  prop. of area with 90% of fishing effort (I-4)")
+  
+  A2table[,c(2:10)] <- round(A2table[,c(2:10)], digits = 2)
+  write.csv(A2table, file= paste(Assregion,AssYear,"Table_2.csv",sep="_"), row.names=FALSE)
 
 # Table A3
   load(paste(pathdir_prodFT,"TableA3.RData",sep="/"))
-  colnames(A3table) <- c("MSFD habitat code","Extent of habitat (10^3 km^2)", "Number of grid cells","Landings 10^3 tonnes",
-                         "Value 10^6 euro","Swept area 10^3 km^2","Proportion of grid cells fished (indicator 2)",
-                       "Proportion of area fished (indicator 3)","Fishing intensity per year (indicator 1)",
-                       "Average impact (indicator 6)", "Proportion of habitat fished with 90% of effort (indicator 4)")
-  
-  A3table[,c(2:11)] <- round(A3table[,c(2:11)], digits = 2)
-  
+  A3table[,c(1:10)] <- round(A3table[,c(1:10)], digits = 2)
   write.csv(A3table, file= paste(Assregion,AssYear,"Table_3.csv",sep="_"), row.names=FALSE)
   
 # Table A4
   load(paste(pathdir_prodFT,"TableA4.RData",sep="/"))
-  A4table <- round(A4table, digits = 2)
+  A4table[,c(1:10)] <- round(A4table[,c(1:10)], digits = 3)
   write.csv(A4table, file= paste(Assregion,AssYear,"Table_4.csv",sep="_"), row.names=FALSE)
-  
-# Table A5
-  load(paste(pathdir_prodFT,"TableA5.RData",sep="/"))
-  colnames(A5table) <- c("MSFD habitat code", "Total area km^2","Total value euro","Area with the least value constituting 5% of the swept area",
-                        "Value of the lowest 5% area", "Fraction of total area with the least value constituting 5% of the swept area",
-                       "Fraction of total value from the lowest 5% area","Area with the least value constituting 10% of the swept area",
-                        "Value of the lowest 10% area", "Fraction of total area with the least value constituting 10% of the swept area",
-                        "Fraction of total value from the lowest 10% area")
-  
-  write.csv(A5table, file= paste(Assregion,AssYear,"Table_5.csv",sep="_"), row.names=FALSE)
   

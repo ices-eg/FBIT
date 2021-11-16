@@ -426,7 +426,7 @@
   save(A7fig, file="FigureA7.RData")
   
 ######
-# Figure A.8 & A.9
+# Figure A.8
 ################
   A8dat <- Region@data
   
@@ -446,8 +446,9 @@
   
   gears <- c("DRB_MOL","OT_CRU","OT_DMF","OT_MIX","OT_SPF","SDN_DMF","SSC_DMF","TBB_CRU","TBB_DMF","TBB_MOL")
   
-  nam <- paste("state",rep(gears[1],length(Period)),Period,sep="_")
+  nam <- paste("state",gears[1],AssYear,sep="_")
   A8dat <- cbind(A8dat, State_reg[match(A8dat$csquares,State_reg$Fisheries.csquares), c(nam)])
+  colnames(A8dat)[ncol(A8dat)] <- nam
   A8dat[,c(nam)][is.na(A8dat[,c(nam)])] <- 1
   A8dat[,c(nam)] <- A8dat[,c(nam)]*A8dat$area_km2 
   Avgear <- aggregate( A8dat[, c(nam, "area_km2")], by= list(A8dat$MSFD), FUN=function(x){sum(x)})
@@ -457,20 +458,22 @@
   AvMSFD_metier <- as.data.frame(Avgear)
   
   for (pp in 2:length(gears)){
-    nam <- paste("state",rep(gears[pp],length(Period)),Period,sep="_")
+    nam <- paste("state",gears[pp],AssYear,sep="_")
     A8dat <- cbind(A8dat, State_reg[match(A8dat$csquares,State_reg$Fisheries.csquares), c(nam)])
+    colnames(A8dat)[ncol(A8dat)] <- nam
     A8dat[,c(nam)][is.na(A8dat[,c(nam)])] <- 1
     A8dat[,c(nam)] <- A8dat[,c(nam)]*A8dat$area_km2 
     Avgear <- aggregate( A8dat[, c(nam, "area_km2")], by= list(A8dat$MSFD), FUN=function(x){sum(x)})
     Avgear[,nam] <- Avgear[,nam]/Avgear[,"area_km2"]
     colnames(Avgear)[1] <- 'MSFD'
     Avgear <- Avgear[,-(ncol(Avgear))]
-    AvMSFD_metier <- cbind(AvMSFD_metier, Avgear[match(AvMSFD_metier$MSFD,Avgear$MSFD), c(2:(length(Period)+1))])
+    AvMSFD_metier <- cbind(AvMSFD_metier, Avgear[match(AvMSFD_metier$MSFD,Avgear$MSFD), c(2)])
+    colnames(AvMSFD_metier)[ncol(AvMSFD_metier)] <- nam
   }
   
-  A8_A9fig <- subset(AvMSFD_metier, AvMSFD_metier$MSFD %in%  c(mostcommonMSFD))
-  save(A8_A9fig, file="FigureA8_A9.RData")
-  
+  A8 <- subset(AvMSFD_metier, AvMSFD_metier$MSFD %in%  c(mostcommonMSFD))
+  save(A8, file="FigureA8.RData")
+    
 #####
 # Table A.4
 ################

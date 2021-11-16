@@ -1,0 +1,8 @@
+"Indicators","0 to 200 m","200 to 800 m","more than 800 m"
+"Average intensity (I-1)",2.08,1.23,0
+"Proportion of area in fished cells (I-2)",0.71,0.39,0
+"Proportion of area fished per year (I-3)",0.53,0.31,0
+"Smallest  prop. of area in fished cells with 90% of fishing effort (I-4)",0.34,0.2,NA
+"Proportion of area in unfished cells (I-5)",0.17,0.48,1
+"Average PD impact (I-6)",0.11,NA,NA
+"Proportion of area with PD impact < 0.2 (I-7)",0.81,NA,NA
