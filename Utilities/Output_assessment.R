@@ -50,12 +50,12 @@
                             axis.title.y  = element_text(size=16),
                             axis.title.x  = element_text(size=16),
                             panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
-                            legend.text   = element_text(size=11),
-                            legend.title  = element_text(size=11))+
+                            legend.text   = element_text(size=6),
+                            legend.title  = element_text(size=6))+
     scale_x_continuous(breaks=coordxmap)+
     scale_y_continuous(breaks=coordymap)+
     coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
-    figmap <- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
+    figmap <- figmap +   guides(colour = guide_legend(override.aes = list(size=5))) 
     
     png(paste(Assregion,AssYear,"figureA2.png",sep="_"),width=10,height=6, units = "in", res = 150 ) 
     print(figmap)
