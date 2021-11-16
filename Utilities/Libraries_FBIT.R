@@ -4,8 +4,10 @@
   #remotes::install_github("ices-tools-prod/icesSharePoint")
   #library(icesSharePoint)
   
-  #devtools::install_github("ices-tools-prod/icesVMS")
-  #library(icesVMS), only needed to download VMS data from ICES data centre (data product will be on sharepoint)
+  # options(repos = c(
+  # icestoolsprod = 'https://ices-tools-prod.r-universe.dev',
+  # CRAN = 'https://cloud.r-project.org'))
+  # install.packages('icesVMS'), only needed to download VMS data from ICES data centre (data product will be on sharepoint)
 
 # R libraries
   library(rgdal)

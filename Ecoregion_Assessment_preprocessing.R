@@ -4,16 +4,14 @@ rm(list = ls())
 library(rgdal)
 
 ### github folder
-pathdir <- "C:/Users/pdvd/Online for git/FBIT"
+pathdir <- getwd()
 
 ### create folder for restricted data
-pathdir_nogit <- "C:/Users/pdvd/Online for git"
-# setwd(pathdir_nogit)
-#dir.create(paste("FBIT - Fisheries restricted"))
-pathdir_nogit <- paste(pathdir_nogit,"FBIT - Fisheries restricted",sep="/")
+dir.create(paste(pathdir," - Fisheries restricted",sep=""))
+pathdir_nogit <- paste(pathdir," - Fisheries restricted",sep="")
 
-EcoReg  <- "Bay of Biscay and the Iberian Coast"
-Period <- 2009:2018 # period with fishing data to calculate impact
+EcoReg  <- "Baltic Sea"
+Period <- 2009:2020 # period with fishing data to calculate impact
 
 ### get fishing data
 library(icesVMS)

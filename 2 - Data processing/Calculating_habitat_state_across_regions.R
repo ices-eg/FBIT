@@ -6,10 +6,10 @@
 
 # load the Fisheries for the region
   load(paste(pathdir_nogit,paste(EcoReg,"fisheries.RData",sep="_"),sep="/")) 
-  load(paste(pathdir_nogit,paste(EcoReg,"fisheries_per_metier.RData",sep="_"),sep="/")) 
+  load(paste(pathdir_nogit,paste(EcoReg,"fisheries_per_metier_comb.RData",sep="_"),sep="/")) 
 
 # calculate state and impact for all gears 
-  # and three different metier groups TBBall, OTCRU and OTREST
+  # and 10 different metier groups
   setwd(paste(pathdir,"Utilities",sep="/"))
   source("Impact_continuous_longevity.R")
   source("Habitatstatefishing.R") ## takes a few minutes

@@ -15,7 +15,7 @@
   dir.create(paste(AssYear))
   setwd(paste(pathdir_nogit,"Producing figures and tables",Assregion,AssYear,sep="/"))
   
-  Region <- Region[!(is.na(Region$medlong)),]
+  #Region <- Region[!(is.na(Region$medlong)),]
   idx <- which(names(Region@data)== "long")
   colnames(Region@data)[idx]  <- "longitude"
   idx <- which(names(Region@data)== "lat")
@@ -27,61 +27,83 @@
   figA1 <- Region@data
   nam <- c(SSAR_year,weight_year,value_year)
   figA1 <- cbind(figA1, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
-  
-  nam <- c(state_year)
-  figA1 <- cbind(figA1, State_reg[match(figA1$csquares,State_reg$Fisheries.csquares), c(nam)])
-  colnames(figA1)[ncol(figA1)] <- state_year
-  
   save(figA1, file="FigureA1.RData")
+  
+ # figA1 <- Region@data
+ #  nam <- c(SSAR_year,weight_year,value_year)
+ # figA1 <- cbind(figA1, Fisheries[match(figA1$csquares,Fisheries$csquares), c(nam)])
+  
+ # nam <- c(state_year)
+ # figA1 <- cbind(figA1, State_reg[match(figA1$csquares,State_reg$Fisheries.csquares), c(nam)])
+ # colnames(figA1)[ncol(figA1)] <- state_year
+  
+ # save(figA1, file="FigureA1.RData")
 
 #####
 # Table A.1
 ################
-  TA1dat <- subset(Region@data,Region@data$Depth >= -200 & Region@data$Depth < 0)
+  TA1dat_all <- Region@data
   
-  nam <- c(SSAR_year)
-  TA1dat <- cbind(TA1dat, Fisheries[match(TA1dat$csquares,Fisheries$csquares), c(nam)])
-  colnames(TA1dat)[ncol(TA1dat)] <- SSAR_year
+  # estimate three depth boundaries
+  mindepth <- c(0, -200, -800)
+  maxdepth <- c(-200, -800, -8000)
   
-# indicator 1 intensity
-  TA1dat$sweptarea <- TA1dat[,SSAR_year]*TA1dat$area_sqkm
-  ind1 <- sum(TA1dat$sweptarea,na.rm=T)/sum(TA1dat$area_sqkm)
-
-# indicator 2 proportion of grid cells fished (fished irrespective of swept area > 0)
-  ind2 <- length(which(TA1dat[,SSAR_year]>0))/nrow(TA1dat)
-
-# indicator 3 proportion of area fished
-  TA1dat$sweptarea2 <- TA1dat$sweptarea
-  TA1dat$sweptarea2 <- ifelse(TA1dat$sweptarea > TA1dat$area_sqkm,TA1dat$area_sqkm,TA1dat$sweptarea)
-  ind3 <- sum(TA1dat$sweptarea2,na.rm=T)/sum(TA1dat$area_sqkm)
-
-# indicator 4 aggregation of fishing pressure
-  TA1dat[,SSAR_year][is.na(TA1dat[,SSAR_year])] <- 0
-  TA1dat <- TA1dat[order(TA1dat[,SSAR_year],decreasing = T),]
-  TA1dat$cumSSAR <- cumsum(TA1dat[,SSAR_year])
-  TA1dat$cumSSAR <- TA1dat$cumSSAR / sum(TA1dat[,SSAR_year])
-  ind4 <- min(which (TA1dat$cumSSAR > .9))/nrow(TA1dat)
+  A1table <- (matrix(data=NA, ncol=3,nrow=7))
   
-# indicator 5 persistently unfished areas
-  SSARNames <- paste("surface_sar",AssPeriod,sep="_")
-  TA1dat <- cbind(TA1dat, Fisheries[match(TA1dat$csquares,Fisheries$csquares), c(SSARNames)])
-  TA1dat[,c(SSARNames)][is.na(TA1dat[,c(SSARNames)])] <- 0
+  for(iDepth in 1:3){
+    TA1dat <-  subset(TA1dat_all,TA1dat_all$Depth < mindepth[iDepth] & TA1dat_all$Depth >= maxdepth[iDepth])
+    if(nrow(TA1dat) >0){
+      nam <- c(SSAR_year)
+      TA1dat <- cbind(TA1dat, Fisheries[match(TA1dat$csquares,Fisheries$csquares), c(nam)])
+      colnames(TA1dat)[ncol(TA1dat)] <- SSAR_year
+      TA1dat[,c(nam)][is.na(TA1dat[,c(nam)])] <- 0
+      
+      # indicator 1 intensity
+      TA1dat$sweptarea <- TA1dat[,nam]*TA1dat$area_sqkm
+      ind1 <- sum(TA1dat$sweptarea,na.rm=T)/sum(TA1dat$area_sqkm)
+      
+      # indicator 2 proportion of area within fished grid cells (fished irrespective of swept area)
+      ind2 <-  ifelse(TA1dat[,nam] > 0,1,0)
+      ind2 <- sum(ind2 * TA1dat$area_sqkm)/sum(TA1dat$area_sqkm)
+      
+      # indicator 3 proportion of area swept each year
+      TA1dat$sweptarea2 <- TA1dat$sweptarea
+      TA1dat$sweptarea2 <- ifelse(TA1dat$sweptarea > TA1dat$area_sqkm,TA1dat$area_sqkm,TA1dat$sweptarea)
+      ind3 <- sum(TA1dat$sweptarea2,na.rm=T)/sum(TA1dat$area_sqkm)
+      
+      # indicator 4 aggregation of fishing pressure
+      if(sum(TA1dat$sweptarea >0)){
+        TA1dat <- TA1dat[order(TA1dat[,"sweptarea"],decreasing = T),]
+        TA1dat$cumSSAR <- cumsum(TA1dat[,"sweptarea"])
+        TA1dat$cumSSAR <- TA1dat$cumSSAR / sum(TA1dat[,"sweptarea"])
+        ind4 <- min(which (TA1dat$cumSSAR > .9))/nrow(TA1dat)
+      } else {ind4 <- NA}
+      
+      # indicator 5 proportion of area within persistently unfished grid cells
+      SSARNames <- paste("surface_sar",AssPeriod,sep="_")
+      TA1dat <- cbind(TA1dat, Fisheries[match(TA1dat$csquares,Fisheries$csquares), c(SSARNames)])
+      TA1dat[,c(SSARNames)][is.na(TA1dat[,c(SSARNames)])] <- 0
+      
+      TA1dat_sub <- subset(TA1dat,TA1dat[,SSARNames[1]] == 0 & TA1dat[,SSARNames[2]] == 0 &
+                             TA1dat[,SSARNames[3]] == 0 & TA1dat[,SSARNames[4]] == 0 &
+                             TA1dat[,SSARNames[5]] == 0 & TA1dat[,SSARNames[6]] == 0)
+      ind5 <- nrow(TA1dat_sub)/nrow(TA1dat) # unfished area is a grid cell with a swept area == 0
+      
+      # indicator 6 average impact - PD model
+      nam <- c(state_year)
+      TA1dat_PD <- cbind(TA1dat, State_reg[match(TA1dat$csquares,State_reg$Fisheries.csquares), c(nam)])
+      colnames(TA1dat_PD)[ncol(TA1dat_PD)] <- state_year
+      TA1dat_PD[,c(nam)][is.na(TA1dat_PD[,c(nam)])] <- 1
+      TA1dat_PD$avgstate_weight <- TA1dat_PD[,nam]*TA1dat_PD$area_sqkm
+      ind6_PD <- 1- sum(TA1dat_PD$avgstate_weight,na.rm=T)/sum(TA1dat_PD$area_sqkm)
+        
+      # indicator 7 proportion of area with impact < 0.2 - PD model
+      ind7_PD <-  ifelse(TA1dat_PD[,nam] >= 0.8,1,0)
+      ind7_PD <- sum(ind7_PD * TA1dat_PD$area_sqkm)/sum(TA1dat_PD$area_sqkm)
+       
+      A1table[,iDepth] <- c(ind1,ind2,ind3,ind4,ind5,ind6_PD,ind7_PD)
+    }}
   
-  TA1dat_sub <- subset(TA1dat,TA1dat[,SSARNames[1]] == 0 & TA1dat[,SSARNames[2]] == 0 &
-                         TA1dat[,SSARNames[3]] == 0 & TA1dat[,SSARNames[4]] == 0 &
-                         TA1dat[,SSARNames[5]] == 0 & TA1dat[,SSARNames[6]] == 0)
-  ind5 <- nrow(TA1dat_sub)/nrow(TA1dat) # unfished area is a grid cell with a swept area == 0
-
-# indicator 6 average impact
-  nam <- c(state_year)
-  TA1dat <- cbind(TA1dat, State_reg[match(TA1dat$csquares,State_reg$Fisheries.csquares), c(nam)])
-  colnames(TA1dat)[ncol(TA1dat)] <- state_year
-  ind6 <- 1- mean(TA1dat[,state_year])
-
-# indicator 7 proportion of area with impact < 0.2 
-  ind7 <- length(which(TA1dat[,state_year] >= 0.8))/nrow(TA1dat)
-
-  A1table <- c(ind1,ind2,ind3,ind4,ind5,ind6,ind7)
   save(A1table, file="TableA1.RData")
 
 #####
