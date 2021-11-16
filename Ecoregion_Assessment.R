@@ -10,7 +10,7 @@ rm(list = ls())
   source(paste(pathdir,"Utilities/Libraries_FBIT.R",sep="/"))
   
 ### select the assessment region and years
-  EcoReg  <- "Baltic Sea"
+  EcoReg  <- "Greater North Sea"
   Period <- 2009:2018 # period with fishing data to calculate impact
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])
@@ -24,7 +24,8 @@ rm(list = ls())
   
   setwd(paste(pathdir,"1 - Input env",sep="/"))
   load(paste(EcoReg,"region_grid_sensitivity.RData",sep="_")) 
-
+  load(paste(EcoReg,"MSFD_per_csquare.RData",sep="_"))
+  
 ### run script to process all figures and tables
   setwd(paste(pathdir,"Utilities",sep="/"))
   source("Processing_assessment.R")
