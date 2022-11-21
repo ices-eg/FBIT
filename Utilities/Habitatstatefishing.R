@@ -22,6 +22,7 @@
     Depl_TBB_DMF          <- 0.140 * loopdata[,paste("TBB_DMF_surface_sar",Period[i],sep="_")]
     Depl_TBB_MOL          <- 0.060 * loopdata[,paste("TBB_MOL_surface_sar",Period[i],sep="_")]
     
+    H  <- 5.31 # recovery  = H/ longevity
     
   ### calculate state for all gears
     Depl <- cbind(Depl_DRB_MOL,Depl_OT_CRU,Depl_OT_DMF,Depl_OT_MIX,
@@ -34,7 +35,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_tot[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_tot[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_tot[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -49,7 +50,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_DRB_MOL[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_DRB_MOL[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_DRB_MOL[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -64,7 +65,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_OT_CRU[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_OT_CRU[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_OT_CRU[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -79,7 +80,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_OT_DMF[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_OT_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_OT_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -94,7 +95,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_OT_MIX[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_OT_MIX[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_OT_MIX[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -109,7 +110,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_OT_SPF[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_OT_SPF[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_OT_SPF[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -124,7 +125,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_SDN_DMF[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_SDN_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_SDN_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -139,7 +140,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_SSC_DMF[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_SSC_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_SSC_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -154,7 +155,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_TBB_CRU[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_TBB_CRU[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_TBB_CRU[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -169,7 +170,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_TBB_DMF[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_TBB_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_TBB_DMF[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)
@@ -184,7 +185,7 @@
     
     for(j in 1:nrow(loopdata)){
       if (loopdata$Depl_TBB_MOL[j] > 0 ) {
-        state[j] <- RBS(Fd=loopdata$Depl_TBB_MOL[j],a=loopdata$slope[j],b=loopdata$intercept[j])
+        state[j] <- RBS(Fd=loopdata$Depl_TBB_MOL[j],a=loopdata$slope[j],b=loopdata$intercept[j],H=H)
       }}
     
     state_year <- cbind(state_year,state)

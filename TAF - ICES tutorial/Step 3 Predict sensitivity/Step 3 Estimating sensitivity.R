@@ -8,7 +8,7 @@
   library(latex2exp)
 
   # set folder directory
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/"
+  pathdir <- "C:/Users/danie/Documents/Online for git/FBIT/TAF - ICES tutorial/"
   
   # load output step 1 
   setwd(paste(pathdir,"Step 1 Assign region of interest/Data layers",sep="/"))
@@ -32,6 +32,10 @@
   # 1) reshuffle the statistical model -- Cumb ~ ll + MSFD + (1 | ID) -- to get longevity on the left-side of the equation
   # 2) use an exponential -- exp() -- to backtransform longevity (longevity is log transformed --> exp(log(longevity)) = longevity)
   # 3) use logit for cumulative biomass - logit is needed as the statistical model is binomial; logit(p) == log(p/(1-p)) 
+  
+  # y  = I + coef_ll * LL + MSFDhab
+  # y  = 0.50
+  # LL = (0.50 - I - MSFDhab) / coef_ll
   
   # prepare grid specific information to predict longevity at a certain location
   OCM <- ifelse(bargrid@data$MSFDhab == "Offshore circalittoral mud",1,0)

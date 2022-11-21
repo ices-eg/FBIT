@@ -193,7 +193,7 @@
       colorchoice <- colorchoice[idx]
       
       figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
-        scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Median longevity \n Years",
+        scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Median longevity \n (years)",
                             labels=label_sub)
       figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
       figmap <- figmap +  theme(plot.background=element_blank(),
@@ -281,7 +281,7 @@
       quat<-c(-1,0,0.1,0.2,0.3,0.5,0.7,1.01)
       filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
       filedata$cat[filedata$Depth< -200]<- NA
-      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.7","0.9-1")
+      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.7","0.7-1")
       idx <- which(!(table(filedata$cat)==0))
       label_sub <- label_all[idx]
       
@@ -361,6 +361,54 @@
       coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
     figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
     return(figmap)  
+    
+    } else if (var == "state_uncertainty"){  
+      
+      YearNames<-c()
+      for (i in 1:length(year)){
+        YearNames <- c(YearNames,paste(var,year[i],sep="_"))
+      }
+      if (length(year) == 1){
+        tr<-filedata[,c(YearNames)]
+        yr <- paste("Uncertainty (Q95-Q5) \n" ,year[1])
+      } else {
+        tr<-filedata[,c(YearNames)]
+        #tr[is.na(tr)]<-0
+        tr<-rowMeans(tr[,c(YearNames)])  
+        #tr[tr==0]<-NA
+        yr <- paste("Uncertainty (Q95-Q5) \n" ,year[1],"-",year[length(year)])
+      }
+      
+      quat<-c(-1,0,0.1,0.2,0.3,0.5,0.8,1.01)
+      filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
+      filedata$cat[filedata$Depth< -200]<- NA
+      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.8","0.8-1")
+      idx <- which(!(table(filedata$cat)==0))
+      label_sub <- label_all[idx]
+      
+      if((length(filedata$cat[is.na(filedata$cat)])>0)){
+        label_sub <- c(label_sub,"NA")
+      }
+      
+      colorchoice <- colorchoice[idx]
+      
+      figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
+        scale_colour_manual(values=c(colorchoice),na.value = "grey50",name  = yr,
+                            labels=label_sub)
+      figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
+      figmap <- figmap +   theme(panel.background=element_blank(),
+                                 axis.text.y   = element_text(size=16),
+                                 axis.text.x   = element_text(size=16),
+                                 axis.title.y  = element_text(size=16),
+                                 axis.title.x  = element_text(size=16),
+                                 panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
+                                 legend.text   = element_text(size=11),
+                                 legend.title  = element_text(size=11))+
+        scale_x_continuous(breaks=coordxmap)+
+        scale_y_continuous(breaks=coordymap)+
+        coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
+      figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
+      return(figmap)  
     
   } else if (var == "impact_IL"){  
     var <- "state_IL"

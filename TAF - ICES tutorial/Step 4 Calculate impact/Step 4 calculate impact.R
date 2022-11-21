@@ -8,7 +8,7 @@
   library(latex2exp)
   
   # set folder directory
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/"
+  pathdir <- "C:/Users/danie/Documents/Online for git/FBIT/TAF - ICES tutorial/"
 
   # load step 3 output
   setwd(paste(pathdir,"Step 3 Predict sensitivity",sep="/"))

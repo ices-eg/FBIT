@@ -2,7 +2,7 @@
 library(lme4)
 
 # set folder directory
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial/Step 2 Estimate relationships benthic data/"
+  pathdir <- "C:/Users/danie/Documents/Online for git/FBIT/TAF - ICES tutorial/Step 2 Estimate relationships benthic data/"
 
 # open benthic data  
   setwd(paste(pathdir,"Benthic data",sep="/"))

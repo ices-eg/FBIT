@@ -1,8 +1,6 @@
   
   # Get the world map
-  worldMap <- getMap(resolution = "high")
-  worldMap@data$id = rownames(worldMap@data)
-  worldMap.points = tidy(x = worldMap, region = "id")
+  worldMap <- map_data("world")
   
   # get colorscales
   bluegreen <- c("#ffffcc","#c7e9b4","#7fcdbb","#41b6c4","#2c7fb8","#253494")

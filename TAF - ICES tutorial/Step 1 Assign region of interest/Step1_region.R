@@ -5,7 +5,7 @@
   library(raster)
   
 # set folder directory
-  pathdir <- "C:/Users/pdvd/Online for git/FBIT/TAF - ICES tutorial" # path to tutorial folder
+  pathdir <- "C:/Users/danie/Documents/Online for git/FBIT/TAF - ICES tutorial"  # path to tutorial folder
   path_env <- paste(pathdir,"Step 1 Assign region of interest/Data layers", sep="/") # path to environmental data layers 
   
 # assign area of interest
@@ -31,6 +31,7 @@
   shapeEEZ@proj4string # check coordinates reference system
   shapeEEZ <- spTransform(shapeEEZ,CRS(proj4string(bargrid))) # make it similar to bargrid
   shapeEEZ@proj4string # check coordinates reference system again
+  bargrid <- spTransform(bargrid,CRS(proj4string(shapeEEZ))) # make it similar to bargrid
   tr <- over(bargrid,shapeEEZ)
   bargrid@data$EEZ <- tr$Country 
   
@@ -89,7 +90,5 @@
 # now remove all c-squares on land
   bargrid <- subset(bargrid,!(is.na(bargrid@data$MSFDhab)))
   
-# save bargrid
-  setwd(path_env)
-  save(bargrid,file="region_grid.RData")  
+
   
