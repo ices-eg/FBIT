@@ -10,12 +10,12 @@ rm(list = ls())
   source(paste(pathdir,"Utilities/Libraries_FBIT.R",sep="/"))
   
 ### select the assessment region and years
-  EcoReg  <- "Greater North Sea"
-  Period <- 2009:2020 # period with fishing data to calculate impact
+  EcoReg  <- "Barents Sea"
+  Period <- 2009:2021 # period with fishing data to calculate impact
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])
-  AssYear <- 2020 # year to be assessed
-  AssPeriod <- 2015:2020 # assessment period /typically  6 years
+  AssYear <- 2021 # year to be assessed
+  AssPeriod <- 2016:2021 # assessment period /typically  6 years
   
 ### load processed file, with longevity and state/impact 
   load(paste(pathdir_nogit,EcoReg,AssYear,paste(EcoReg,"state.RData",sep="_"),sep="/")) 
@@ -35,6 +35,7 @@ rm(list = ls())
 ### run script to make final output  
   setwd(paste(pathdir,"Utilities",sep="/"))
   source("map_plot.R")
+  source("map_plot_Baltic.R")
   source("EO_Output_assessment.R")
   source("Output_assessment.R")
   

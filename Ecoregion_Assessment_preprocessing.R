@@ -14,12 +14,12 @@ pathdir_nogit <- paste(pathdir," - Fisheries restricted",sep="")
 library(icesVMS);library(icesConnect)
 #icesConnect::ices_token("vandenderen")
 icesConnect::set_username("vandenderen") ## use your sharepoint name
-datacall <- 2021
+datacall <- 2022
 source(paste(pathdir,"Utilities/Get_fishing_data.R",sep="/")) 
 
 ### create fishing data per ecoregion
-EcoReg  <- "Greater North Sea"
-Period <- 2009:datacall-1 # period with fishing data to calculate impact
+EcoReg  <- "Barents Sea"
+Period <- 2009:(datacall-1) # period with fishing data to calculate impact
 source(paste(pathdir,"Utilities/Merge_fishing_data_per_region.R",sep="/")) 
 
 ### estimate state for specified ecoregion per metier per year # takes 5 minutes

@@ -37,13 +37,13 @@
       }
       if (length(year) == 1){
         tr<-filedata[,c(YearNames)]
-        yr <- paste("Surface abrasion \n" ,year[1])
+        yr <- paste("Surface abras-\n ion"  ,year[1])
       } else {
         tr<-filedata[,c(YearNames)]
         tr[is.na(tr)]<-0
         tr<-rowMeans(tr[,c(YearNames)])  
         tr[tr==0]<-NA
-        yr <- paste("Surface abrasion \n" ,year[1],"-",year[length(year)])
+        yr <- paste("Surface abras-\n ion" ,year[1],"-",year[length(year)])
       }
      
       quat<-c(-1,0,0.1,0.5,1,5,10,100)
@@ -181,7 +181,8 @@
       
       quat<-c(0.1,2.5,3,3.5,4,5,6,8,1000000)
       filedata$cat<- as.factor(cut(tr,quat,right=FALSE))
-      filedata$cat[filedata$Depth< -200]<- NA
+      if (ecoregion == "Greater North Sea"){
+        filedata$cat[filedata$Depth< -200]<- NA}
       label_all <- c("<2.5", "2.5-3","3-3.5","3.5-4","4-5","5-6","6-8",">8")
       idx <- which(!(table(filedata$cat)==0))
       label_sub <- label_all[idx]
@@ -191,6 +192,7 @@
       }
       
       colorchoice <- colorchoice[idx]
+    
       
       figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
         scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Median longevity \n (years)",
@@ -318,13 +320,13 @@
     }
     if (length(year) == 1){
       tr<-filedata[,c(YearNames)]
-      yr <- paste("Impact (PD method) \n" ,year[1])
+      yr <- paste("Impact (1-RBS) \n" ,year[1])
     } else {
       tr<-filedata[,c(YearNames)]
       #tr[is.na(tr)]<-0
       tr<-rowMeans(tr[,c(YearNames)])  
       #tr[tr==0]<-NA
-      yr <- paste("Impact (PD method) \n" ,year[1],"-",year[length(year)])
+      yr <- paste("Impact (1-RBS) \n" ,year[1],"-",year[length(year)])
       
     }
     
@@ -332,7 +334,8 @@
     
     quat<-c(-1,0,0.1,0.2,0.3,0.5,0.8,1.01)
     filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
-    filedata$cat[filedata$Depth< -200]<- NA
+    if (ecoregion == "Greater North Sea"){
+      filedata$cat[filedata$Depth< -200]<- NA}
     label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.8","0.8-1")
     idx <- which(!(table(filedata$cat)==0))
     label_sub <- label_all[idx]
@@ -362,7 +365,7 @@
     figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
     return(figmap)  
     
-    } else if (var == "state_uncertainty"){  
+    } else if (var == "state_CV"){  
       
       YearNames<-c()
       for (i in 1:length(year)){
@@ -370,19 +373,20 @@
       }
       if (length(year) == 1){
         tr<-filedata[,c(YearNames)]
-        yr <- paste("Uncertainty (Q95-Q5) \n" ,year[1])
+        yr <- paste("CV      .\n" ,year[1])
       } else {
         tr<-filedata[,c(YearNames)]
         #tr[is.na(tr)]<-0
         tr<-rowMeans(tr[,c(YearNames)])  
         #tr[tr==0]<-NA
-        yr <- paste("Uncertainty (Q95-Q5) \n" ,year[1],"-",year[length(year)])
+        yr <- paste("CV     .\n" ,year[1],"-",year[length(year)])
       }
       
-      quat<-c(-1,0,0.1,0.2,0.3,0.5,0.8,1.01)
+      quat<-c(-1,0,0.1,0.2,0.4,0.6,0.8,10.01)
       filedata$cat<- as.factor(cut(tr,quat,right=TRUE))
-      filedata$cat[filedata$Depth< -200]<- NA
-      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.3","0.3-0.5","0.5-0.8","0.8-1")
+      if (ecoregion == "Greater North Sea"){
+        filedata$cat[filedata$Depth< -200]<- NA}
+      label_all <- c("0","0-0.1","0.1-0.2","0.2-0.4","0.4-0.6","0.6-0.8",">0.8")
       idx <- which(!(table(filedata$cat)==0))
       label_sub <- label_all[idx]
       
@@ -465,4 +469,3 @@
   }  
     
   }
-  

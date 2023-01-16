@@ -17,7 +17,7 @@
   sar    <- (map_plot(figEO1,"surface_sar",AssYear,purples,Assregion))
   impact <- (map_plot(figEO1,"impact",AssYear,sealand,Assregion))
   longevi <- (map_plot(figEO1,"medlong",AssYear,sealand,Assregion))
-  uncert  <- (map_plot(figEO1,"state_uncertainty",AssYear,sealand,Assregion))
+  uncert  <- (map_plot(figEO1,"state_CV",AssYear,sealand,Assregion))
   
   png(paste(Assregion,AssYear,"EO_figure1.png",sep="_"),width=12,height=9, units = "in", res = 150 ) 
   print(grid.arrange(longevi,sar,impact,uncert, nrow = 2))
@@ -57,7 +57,7 @@
   axis(2,c(0,0.5,1),las=1)
   
   # right panel
-  right<-as.data.frame(figEO2[[2]])
+  right<-as.data.frame(figEO2[[3]])
   plot(right[,1]~right$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,1),
        ylab="Proportion habitat with impact < 0.2",xlab="Year")
   lines(right[,2]~right$Year, col="red", type="o", lty=2)
@@ -66,7 +66,7 @@
   lines(right[,5]~right$Year, col="black", type="o", lty=5)
   axis(2,c(0,0.5,1),las=1)
   
-  legend(Period[1],1,legend=colnames(right[1:5]),bty = "n",
+  legend(Period[1],.3,legend=colnames(right[1:5]),bty = "n",
          col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=0.2,y.intersp = 0.8)
   
 dev.off()

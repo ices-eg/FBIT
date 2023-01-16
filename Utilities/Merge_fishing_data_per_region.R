@@ -7,27 +7,25 @@
   load(paste(pathdir,"1 - Input env",paste(EcoReg,"region_grid_sensitivity.RData",sep="_"),sep="/")) 
 
 # load total fishing data
-  if (EcoReg %in% c("Baltic Sea","Greater North Sea","Celtic Seas","Bay of Biscay and the Iberian Coast")){
-   load(paste(pathdir_nogit,paste("fisheries_EU_atlantic_FBIT_VMSdatacall",datacall,".RData", sep=""),sep="/"))
-  }
+   load(paste(pathdir_nogit,paste("fisheries_FBIT_VMSdatacall",datacall,".RData", sep=""),sep="/"))
 
   loopdata <- data.frame(Region@data$csquares)
   colnames(loopdata) <- "csquares"
   
   for(i in 1:length(Period)){
     Total <- subset(Fisheries,Fisheries$year == Period[i])
-    colnames(Total)[1:4] <- paste(colnames(Total)[1:4], Period[i], sep = "_")
-    loopdata <- cbind(loopdata, Total[match(loopdata$csquares,Total$c_square), c(1:4)])
+    colnames(Total)[3:6] <- paste(colnames(Total)[3:6], Period[i], sep = "_")
+    loopdata <- cbind(loopdata, Total[match(loopdata$csquares,Total$c_square), c(3:6)])
   }
   
   Fisheries <- loopdata
+  rownames(Fisheries) <- NULL
   setwd(paste(pathdir_nogit,"/",EcoReg,"/",datacall-1,sep=""))
   save(Fisheries,file=paste(EcoReg,"fisheries.RData",sep="_"))
   
 # load data per metier
-  if (EcoReg %in% c("Baltic Sea","Greater North Sea","Celtic Seas","Bay of Biscay and the Iberian Coast")){
-    load(paste(pathdir_nogit,paste("fisheries_EU_atlantic_metier_FBIT_VMSdatacall",datacall,".RData", sep=""),sep="/"))
-  }
+  load(paste(pathdir_nogit,paste("fisheries_metier_FBIT_VMSdatacall",datacall,".RData", sep=""),sep="/"))
+  
   
   loopdata <- data.frame(Region@data$csquares)
   colnames(loopdata) <- "csquares"
@@ -39,8 +37,8 @@
   for (i in 1: length(Period)){
     for (p in 1:length(metier)){
       Total <- subset(FisheriesMet,FisheriesMet$year == Period[i] & FisheriesMet$gear_category == metier[p])
-      colnames(Total)[1:4] <- paste(metier_name[p],colnames(Total)[1:4], Period[i], sep = "_")
-      loopdata <- cbind(loopdata, Total[match(loopdata$csquares,Total$c_square), c(1:4)])
+      colnames(Total)[4:7] <- paste(metier_name[p],colnames(Total)[4:7], Period[i], sep = "_")
+      loopdata <- cbind(loopdata, Total[match(loopdata$csquares,Total$c_square), c(4:7)])
     }}
       
 FisheriesMet <- loopdata

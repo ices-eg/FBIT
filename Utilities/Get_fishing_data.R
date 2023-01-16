@@ -2,23 +2,26 @@
 # use icesVMS to get 
 # total surface and subsurface abrasion, weight and value of landings per year
   
-  EcoReg <- c("Baltic Sea","Greater North Sea","Celtic Seas","Bay of Biscay and the Iberian Coast")
-  Period <- 2009:datacall-1
+  #EcoReg <- c("Baltic Sea","Greater North Sea","Celtic Seas","Bay of Biscay and the Iberian Coast")
+  Period <- 2009:(datacall-1)
   
   Total <- c()
   
-  for (j in 1:length(EcoReg)) {
   for (i in 1: length(Period)){
-    Total_year   <- icesVMS::get_wgfbit_data1(EcoReg[j], Period[i])
-    Total <- rbind(Total, Total_year)
-  }}
+    Total_year   <- get_wgfbit_data3(year = Period[i], datacall=datacall)
+    Total_comb   <- aggregate(list(Total_year$surface_sar,Total_year$subsurface_sar,
+                                   Total_year$total_weight,Total_year$total_value,
+                                   Total_year$mw_fishinghours),by=list(Total_year$c_square,Total_year$year),FUN=sum)
+    colnames(Total_comb) <- c("c_square","year","surface_sar","subsurface_sar","total_weight","total_value","mw_fishinghours")
+    Total <- rbind(Total, Total_comb)
+  }
 
   Fisheries <- Total
   
   ### remove columns - save as small file
   setwd(pathdir_nogit)
-  Fisheries <- Fisheries[,c(1:4,6,7,10)]
-  save(Fisheries,file=paste("fisheries_EU_atlantic_FBIT_VMSdatacall",datacall,".RData",sep=""))
+  #Fisheries <- Fisheries[,c(1:4,6,7,10)]
+  save(Fisheries,file=paste("fisheries_FBIT_VMSdatacall",datacall,".RData",sep=""))
     
 # get fishing data specified per metier
 
@@ -27,19 +30,23 @@
 
   Total <- c()
   
-  for (j in 1:length(EcoReg)) {
-    for (i in 1: length(Period)){
-      for (p in 1:length(metier)){
-        Gear   <- icesVMS::get_wgfbit_data1(EcoReg[j], Period[i], benthis_metier = metier[p])
-        if(length(Gear)>0){
-          Total <- rbind(Total, Gear)
+  for (i in 1: length(Period)){
+    for (p in 1:length(metier)){
+        Gear   <- get_wgfbit_data3( Period[i], benthis_metier = metier[p],datacall = datacall)
+      if(length(Gear)>0){
+        Total_gear   <- aggregate(list(Gear$surface_sar,Gear$subsurface_sar,
+                                       Gear$total_weight,Gear$total_value,
+                                       Gear$mw_fishinghours),by=list(Gear$c_square,Gear$year,Gear$gear_category),FUN=sum)
+        colnames(Total_gear) <- c("c_square","year","gear_category","surface_sar","subsurface_sar","total_weight","total_value","mw_fishinghours")
+        
+        Total <- rbind(Total, Total_gear)
         }
-      }}}  
+      }}  
       
   FisheriesMet <- Total
   
   ### remove columns - save as small file
   setwd(pathdir_nogit)
-  FisheriesMet <- FisheriesMet[,c(1:4,6,7,10)]
-  save(FisheriesMet,file=paste("fisheries_EU_atlantic_metier_FBIT_VMSdatacall",datacall,".RData", sep=""))
+  #FisheriesMet <- FisheriesMet[,c(1:4,6,7,10)]
+  save(FisheriesMet,file=paste("fisheries_metier_FBIT_VMSdatacall",datacall,".RData", sep=""))
   

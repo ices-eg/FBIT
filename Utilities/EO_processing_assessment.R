@@ -25,6 +25,7 @@ colnames(Region@data)[idx]  <- "latitude"
 # Status figure in latest year
 # ------------------------------------------------------------------------------
 figEO1 <- Region@data
+
 nam <- c(SSAR_year,weight_year,value_year)
 figEO1 <- cbind(figEO1, Fisheries[match(figEO1$csquares,Fisheries$csquares), c(nam)])
 
@@ -32,15 +33,26 @@ nam <- c(state_year)
 figEO1 <- cbind(figEO1, State_reg[match(figEO1$csquares,State_reg$Fisheries.csquares), c(nam)])
 colnames(figEO1)[ncol(figEO1)] <- state_year
 
-library(matrixStats)
+# 
+ms    <- rowMeans(State_reg_boot[,2:ncol(State_reg_boot)]) # mean 
+stdev <- apply(State_reg_boot[,2:ncol(State_reg_boot)],1, sd, na.rm = TRUE)
+State_reg_boot$state_CV <- stdev/ms
 
 # Row quantiles
-probs       <- c(0.05,0.5 ,0.95)
-quant       <- rowQuantiles(as.matrix(State_reg_boot[,2:ncol(State_reg_boot)]), probs = probs)
-state_quant <- data.frame(as.character(State_reg_boot$Fisheries.csquares),quant)
-state_quant[,5] <- state_quant[,4]-state_quant[,2]
-figEO1 <- cbind(figEO1, state_quant[match(figEO1$csquares,state_quant[,1]), c(5)])
-colnames(figEO1)[ncol(figEO1)] <- paste("state_uncertainty",AssYear,sep="_")
+#probs       <- c(0.05,0.5 ,0.95)
+#quant       <- rowQuantiles(as.matrix(State_reg_boot[,2:ncol(State_reg_boot)]), probs = probs)
+#state_quant <- data.frame(as.character(State_reg_boot$Fisheries.csquares),quant)
+#state_quant[,5] <- state_quant[,4]-state_quant[,2]
+figEO1 <- cbind(figEO1, State_reg_boot[match(figEO1$csquares,State_reg_boot[,1]), c("state_CV")])
+colnames(figEO1)[ncol(figEO1)] <- paste("state_CV",AssYear,sep="_")
+figEO1[,paste("state_CV",AssYear,sep="_")] <- ifelse(figEO1[,paste("state",AssYear,sep="_")] == 1, 0,
+                                                     figEO1[,paste("state_CV",AssYear,sep="_")])
+
+if(Assregion == "Baltic Sea"){
+  figEO1[,c(state_year)] <- ifelse(figEO1$min_oxygen < 0.5, -10^10,figEO1[,c(state_year)])
+  figEO1[,c(paste("state_CV",AssYear,sep="_"))] <- ifelse(figEO1$min_oxygen < 0.5, 10^10,figEO1[,c(paste("state_CV",AssYear,sep="_"))])
+  figEO1[,"medlong"] <- ifelse(figEO1$min_oxygen < 0.5, 10^10,figEO1[,"medlong"])
+  }
 
 save(figEO1, file="EO_Figure1.RData")
 
@@ -56,6 +68,10 @@ TA1dat[,c(SSAR_year)][is.na(TA1dat[,c(SSAR_year)])] <- 0
 TA1dat <- cbind(TA1dat, State_reg[match(TA1dat$csquares,State_reg$Fisheries.csquares), c(state_year)])
 colnames(TA1dat)[ncol(TA1dat)] <- state_year
 TA1dat <- subset(TA1dat,!(is.na(TA1dat[,state_year])))
+
+# get area with information
+TA1dat <- subset(TA1dat,!(is.na(TA1dat$Depth)))
+TA1dat <- subset(TA1dat,TA1dat$Depth <0)
 
 # get shallow
 TA1dat_shallow <- subset(TA1dat,TA1dat$Depth > -200)
@@ -103,14 +119,27 @@ out6 <- round(sum(fu * TA1dat_shallow$area_sqkm)/sum(TA1dat_shallow$area_sqkm),d
 tab200 <- data.frame(out0="Total",out1,out2,out3,out4,out5,out6)
 
 # ------------------------
-# do the same for the 8 most dominant habitat type (and "others")
+# do the same for the 6 most dominant habitat type (and "others")
 msfd_csq_new <- cbind(msfd_csq, TA1dat[match(msfd_csq$csquares,TA1dat$csquares), c("Depth")])
 colnames(msfd_csq_new)[ncol(msfd_csq_new)] <- "Depth"
-msfd_shallow <- subset(msfd_csq_new,msfd_csq_new$Depth > -200)
+msfd_shallow <- subset(msfd_csq_new,msfd_csq_new$Depth > -200 & msfd_csq_new$Depth < 0)
+if (Assregion == "Baltic Sea"){
+msfd_shallow$MSFD <- ifelse(msfd_shallow$csquares %in% TA1dat$csquares[TA1dat$min_oxygen <0.5],
+                       "Anoxic",msfd_shallow$MSFD)
+}
 id_msfd <- aggregate(msfd_shallow$area_km2,by=list(msfd_shallow$MSFD),FUN=sum,na.rm=T)
-id_msfd <- id_msfd[order(-id_msfd[,2]),]
 
-for (hab in 1:8){
+# remove rock and reef
+id <- id_msfd[grepl("reef", id_msfd[["Group.1"]]) | grepl("rock", id_msfd[["Group.1"]]), ]
+id2 <- id_msfd[grepl("reef", id_msfd[["Group.1"]]) & grepl("rock", id_msfd[["Group.1"]]), ]
+id <- c(id$Group.1,id2$Group.1)
+
+id_msfd_ign <- subset(id_msfd,id_msfd$Group.1 %in% id)
+id_msfd     <- subset(id_msfd,!(id_msfd$Group.1 %in% id))
+id_msfd     <- id_msfd[order(-id_msfd[,2]),]
+id_msfd     <- rbind(id_msfd,id_msfd_ign)
+
+for (hab in 1:6){
   habdat <- subset(msfd_shallow,msfd_shallow$MSFD == id_msfd$Group.1[hab])
   habdat <- cbind(habdat, TA1dat[match(habdat$csquares,TA1dat$csquares), c(SSAR_year,state_year)])
   
@@ -219,6 +248,8 @@ for (hab in 1:8){
   TA1dat <- subset(TA1dat,!(is.na(TA1dat[,state_year])))
   
   # get deep
+  TA1dat <- subset(TA1dat,!(is.na(TA1dat$Depth)))
+  TA1dat <- subset(TA1dat,TA1dat$Depth <0)
   TA1dat_deep    <- subset(TA1dat,TA1dat$Depth < -200 & TA1dat$Depth > -800)
   
   # area
@@ -268,10 +299,23 @@ for (hab in 1:8){
   msfd_csq_new <- cbind(msfd_csq, TA1dat[match(msfd_csq$csquares,TA1dat$csquares), c("Depth")])
   colnames(msfd_csq_new)[ncol(msfd_csq_new)] <- "Depth"
   msfd_shallow <- subset(msfd_csq_new,msfd_csq_new$Depth < -200 & msfd_csq_new$Depth > -800)
+  if (Assregion == "Baltic Sea"){
+    msfd_shallow$MSFD <- ifelse(msfd_shallow$csquares %in% TA1dat$csquares[TA1dat$min_oxygen <0.5],
+                                "Anoxic",msfd_shallow$MSFD)
+  }
   id_msfd <- aggregate(msfd_shallow$area_km2,by=list(msfd_shallow$MSFD),FUN=sum,na.rm=T)
-  id_msfd <- id_msfd[order(-id_msfd[,2]),]
   
-  for (hab in 1:3){
+  # remove rock and reef
+  id <- id_msfd[grepl("reef", id_msfd[["Group.1"]]) | grepl("rock", id_msfd[["Group.1"]]), ]
+  id2 <- id_msfd[grepl("reef", id_msfd[["Group.1"]]) & grepl("rock", id_msfd[["Group.1"]]), ]
+  id <- c(id$Group.1,id2$Group.1)
+  
+  id_msfd_ign <- subset(id_msfd,id_msfd$Group.1 %in% id)
+  id_msfd     <- subset(id_msfd,!(id_msfd$Group.1 %in% id))
+  id_msfd     <- id_msfd[order(-id_msfd[,2]),]
+  id_msfd     <- rbind(id_msfd,id_msfd_ign)
+  
+  for (hab in 1:1){
     habdat <- subset(msfd_shallow,msfd_shallow$MSFD == id_msfd$Group.1[hab])
     habdat <- cbind(habdat, TA1dat[match(habdat$csquares,TA1dat$csquares), c(SSAR_year,state_year)])
     
@@ -371,6 +415,7 @@ for (hab in 1:8){
 # time series
 #------------------------------
   A4dat <-  Region@data
+  A4dat <- subset(A4dat, A4dat$min_oxygen >= 0.5)
   
   # get SAR for the whole period
   SSARNames <- paste("surface_sar",Period,sep="_") 
