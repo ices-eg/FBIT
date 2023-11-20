@@ -415,7 +415,9 @@ for (hab in 1:6){
 # time series
 #------------------------------
   A4dat <-  Region@data
+  if(Assregion == "Baltic Sea"){
   A4dat <- subset(A4dat, A4dat$min_oxygen >= 0.5)
+  }
   
   # get SAR for the whole period
   SSARNames <- paste("surface_sar",Period,sep="_") 

@@ -14,7 +14,7 @@ pathdir_nogit <- paste(pathdir," - Fisheries restricted",sep="")
 library(icesVMS);library(icesConnect)
 #icesConnect::ices_token("vandenderen")
 icesConnect::set_username("vandenderen") ## use your sharepoint name
-datacall <- 2022
+datacall <- 2023
 source(paste(pathdir,"Utilities/Get_fishing_data.R",sep="/")) 
 
 ### create fishing data per ecoregion
