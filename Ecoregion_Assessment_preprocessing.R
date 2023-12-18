@@ -18,7 +18,7 @@ datacall <- 2023
 source(paste(pathdir,"Utilities/Get_fishing_data.R",sep="/")) 
 
 ### create fishing data per ecoregion
-EcoReg  <- "Barents Sea"
+EcoReg  <- "Bay of Biscay and the Iberian Coast"
 Period <- 2009:(datacall-1) # period with fishing data to calculate impact
 source(paste(pathdir,"Utilities/Merge_fishing_data_per_region.R",sep="/")) 
 

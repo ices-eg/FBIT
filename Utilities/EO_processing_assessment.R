@@ -415,6 +415,7 @@ for (hab in 1:6){
 # time series
 #------------------------------
   A4dat <-  Region@data
+  A4dat <-  subset(A4dat,A4dat$Depth > -800)
   if(Assregion == "Baltic Sea"){
   A4dat <- subset(A4dat, A4dat$min_oxygen >= 0.5)
   }
@@ -466,6 +467,7 @@ for (hab in 1:6){
   A4msfd <- merge(A4msfd,msfd_csq_new,by = "csquares", all.x =T)
   A4msfd$MSFD <- as.character(A4msfd$MSFD)
   
+  msfd_csq <- subset(msfd_csq,msfd_csq$csquares %in% c(A4dat$csquares))
   id_msfd <- aggregate(msfd_csq$area_km2,by=list(msfd_csq$MSFD),FUN=sum,na.rm=T)
   id_msfd <- id_msfd[order(-id_msfd[,2]),]
   mostcommonMSFD <- id_msfd[1:4,1]
