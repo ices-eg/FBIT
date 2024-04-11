@@ -23,6 +23,23 @@
   print(grid.arrange(longevi,sar,impact,uncert, nrow = 2))
   dev.off()
   
+##### Figure EO - 1a - fishing intensity ## Created wrt ADGEOB april 2024
+  load(paste(pathdir_prodFT,"EO_Figure1.RData",sep="/"))
+  
+  sar    <- (map_plot(figEO1,"surface_sar",AssYear,purples,Assregion))
+  png(paste(Assregion,AssYear,"EO_figSAR.png",sep="_"),width=6,height=4.5, units = "in", res = 150 ) 
+  print(sar)
+  dev.off()
+  
+##### Figure EO - 1b - seabed sensitivity and seabed impact ## Created wrt ADGEOB april 2024
+  load(paste(pathdir_prodFT,"EO_Figure1.RData",sep="/"))
+  
+  impact <- (map_plot(figEO1,"impact",AssYear,sealand,Assregion))
+  longevi <- (map_plot(figEO1,"medlong",AssYear,sealand,Assregion))
+  png(paste(Assregion,AssYear,"EO_figIMP.png",sep="_"),width=12,height=4.5, units = "in", res = 150 ) 
+  print(grid.arrange(longevi, impact, nrow=1))
+  dev.off()
+  
 ##### table 1
   load(paste(pathdir_prodFT,"EO_table1_200.Rdata",sep="/"))
   write.csv(tab200, file= paste(Assregion,AssYear,"EO_table_200.csv",sep="_"), row.names=FALSE)
@@ -69,4 +86,46 @@
   legend(Period[1],.3,legend=colnames(right[1:5]),bty = "n",
          col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=0.2,y.intersp = 0.8)
   
+dev.off()
+
+##### Figure EO - 2a # only left panel ## Created wrt ADGEOB april 2024
+load(paste(pathdir_prodFT,"EO_Figure2.RData",sep="/"))
+
+png(paste(Assregion,AssYear,"EO_figure2left.png",sep="_"),width=5,height=4.5, units = "in", res = 150) 
+par(mar=c(5,5,2,1))
+#left panel
+left<-as.data.frame(figEO2[[1]])
+plot(left[,1]~left$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,ma+0.5),
+     ylab=expression(plain("Average bottom trawling intensity (year")^plain("-1")*")"),xlab="Year")
+lines(left[,2]~left$Year, col="red", type="o", lty=2, lwd=1.2)
+lines(left[,3]~left$Year, col="blue", type="o", lty=3, lwd=1.2)
+lines(left[,4]~left$Year, col="orange", type="o", lty=4, lwd=1.2)
+lines(left[,5]~left$Year, col="black", type="o", lty=5, lwd=1.2)
+axis(2,las=1)
+if(EcoReg == "Baltic Sea"){
+  legend("top", legend=colnames(left[1:5]),bty = "n",
+         col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=0.2,y.intersp = 0.8)} else {
+           legend("bottom", legend=colnames(left[1:5]),bty = "n",
+                  col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=0.2,y.intersp = 0.8)}
+dev.off()
+
+##### Figure EO - 2a # only right panel ## Created wrt ADGEOB april 2024
+load(paste(pathdir_prodFT,"EO_Figure2.RData",sep="/"))
+
+png(paste(Assregion,AssYear,"EO_figure2right.png",sep="_"),width=5,height=4.5, units = "in", res = 150) 
+par(mar=c(5,5,2,1))
+# right panel
+right<-as.data.frame(figEO2[[3]])
+right[,1:5] <- right[,1:5]*100
+plot(right[,1]~right$Year,type="o",col="black",lwd=2, pch=16, yaxt="n",ylim=c(0,100),
+     ylab="Percentage of habitat with impact < 0.2 (%)",xlab="Year")
+lines(right[,2]~right$Year, col="red", type="o", lty=2, lwd=1.2)
+lines(right[,3]~right$Year, col="blue", type="o", lty=3, lwd=1.2)
+lines(right[,4]~right$Year, col="orange", type="o", lty=4, lwd=1.2)
+lines(right[,5]~right$Year, col="black", type="o", lty=5, lwd=1.2)
+axis(2,las=1)
+
+legend("bottom",legend=colnames(right[1:5]),bty = "n",
+       col=c("black", "red", "blue","orange","black"), lty=1:5, cex=0.8, x.intersp=0.2,y.intersp = 0.8)
+
 dev.off()

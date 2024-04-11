@@ -1,10 +1,10 @@
 rm(list = ls())
 
 ### libraries needed
-library(rgdal)
+#library(rgdal)
 
 ### github folder
-pathdir <- getwd()
+pathdir <- "D:/FBIT"
 
 ### create folder for restricted data
 dir.create(paste(pathdir," - Fisheries restricted",sep=""))
@@ -18,8 +18,8 @@ datacall <- 2023
 source(paste(pathdir,"Utilities/Get_fishing_data.R",sep="/")) 
 
 ### create fishing data per ecoregion
-EcoReg  <- "Bay of Biscay and the Iberian Coast"
-Period <- 2009:(datacall-1) # period with fishing data to calculate impact
+EcoReg  <- "Celtic Seas"
+Period <- 2012:(datacall-1) # period with fishing data to calculate impact # changed to 2012-..
 source(paste(pathdir,"Utilities/Merge_fishing_data_per_region.R",sep="/")) 
 
 ### estimate state for specified ecoregion per metier per year # takes 5 minutes

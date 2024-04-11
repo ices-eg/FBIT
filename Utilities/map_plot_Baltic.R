@@ -29,13 +29,13 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
     }
     if (length(year) == 1){
       tr<-filedata[,c(YearNames)]
-      yr <- paste("Surface abras-\n ion"  ,year[1])
+      yr <- paste0("Bottom trawl intensity \n(Swept Area Ratio) \n",year[1])
     } else {
       tr<-filedata[,c(YearNames)]
       tr[is.na(tr)]<-0
       tr<-rowMeans(tr[,c(YearNames)])  
       tr[tr==0]<-NA
-      yr <- paste("Surface abras-\n ion" ,year[1],"-",year[length(year)])
+      yr <- paste0("Bottom trawl intensity \n(Swept Area Ratio) \n",year[1],"-",year[length(year)])
     }
     
     quat<-c(-1,0,0.1,0.5,1,5,10,100)
@@ -45,7 +45,7 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
     label_sub <- label_all[idx]
     
     if((length(filedata$cat[is.na(filedata$cat)])>0)){
-      label_sub <- c(label_sub,"no fishing")
+      label_sub <- c(label_sub,"no bottom trawling")
     }
     
     colorchoice <- colorchoice[idx-1]
@@ -63,8 +63,8 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
                               panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
                               legend.text   = element_text(size=11),
                               legend.title  = element_text(size=11))+
-      scale_x_continuous(breaks=coordxmap)+
-      scale_y_continuous(breaks=coordymap)+
+      scale_x_continuous()+
+      scale_y_continuous()+
       coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
     figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5))) 
     return(figmap)
@@ -138,7 +138,7 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
 
     
     figmap <- ggplot() + geom_point(data=filedata, aes(x=longitude, y=latitude, colour=factor(cat)),shape=15,size=pointsize,na.rm=T) +
-      scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Median longevity \n (years)",
+      scale_colour_manual(values=colorchoice,na.value = "grey50",name  ="Seabed sensitivity \n(Median longevity) \n(years)",
                           labels=label_sub)
     figmap <- figmap +  geom_polygon(data = worldMap, aes(x = long, y = lat, group = group),color="dark grey",fill="light grey")
     figmap <- figmap +  theme(plot.background=element_blank(),
@@ -150,8 +150,8 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
                               panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
                               legend.text   = element_text(size=11),
                               legend.title  = element_text(size=11))+
-      scale_x_continuous(breaks=coordxmap)+
-      scale_y_continuous(breaks=coordymap)+
+      scale_x_continuous()+
+      scale_y_continuous()+
       coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
     figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
     return(figmap)  
@@ -214,13 +214,13 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
     }
     if (length(year) == 1){
       tr<-filedata[,c(YearNames)]
-      yr <- paste("Impact (1-RBS) \n" ,year[1])
+      yr <- paste0("PD impact \n" ,year[1])
     } else {
       tr<-filedata[,c(YearNames)]
       #tr[is.na(tr)]<-0
       tr<-rowMeans(tr[,c(YearNames)])  
       #tr[tr==0]<-NA
-      yr <- paste("Impact (1-RBS) \n" ,year[1],"-",year[length(year)])
+      yr <- paste0("PD impact \n" ,year[1],"-",year[length(year)])
       
     }
     
@@ -253,8 +253,8 @@ map_plot<-function(filename,var, year, colorchoice,ecoregion){
                               panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
                               legend.text   = element_text(size=11),
                               legend.title  = element_text(size=11))+
-      scale_x_continuous(breaks=coordxmap)+
-      scale_y_continuous(breaks=coordymap)+
+      scale_x_continuous()+
+      scale_y_continuous()+
       coord_cartesian(xlim=c(coordslim[1], coordslim[2]), ylim=c(coordslim[3],coordslim[4]))
     figmap<- figmap +   guides(colour = guide_legend(override.aes = list(size=5)))
     return(figmap)  

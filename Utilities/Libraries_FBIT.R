@@ -10,7 +10,7 @@
   # install.packages('icesVMS'), only needed to download VMS data from ICES data centre (data product will be on sharepoint)
 
 # R libraries
-  library(rgdal)
+  #library(rgdal) ## not available for R version 4.3.2 (and newer)
   library(dplyr)
   library(rje)
   library(ggplot2)

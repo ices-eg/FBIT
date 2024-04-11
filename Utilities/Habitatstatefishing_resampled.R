@@ -62,7 +62,7 @@
   H_boot <- exp(rnorm(nb, mean = log(5.31), sd = sdev)) 
   
   for (boot in 1:nb){
-    for (i in 13: length(Period)){
+    for (i in 1: length(Period)){
   loopdata <- FisheriesMet
   Depl_DRB_MOL    <- d_DRB_MOL[boot] * loopdata[,paste("DRB_MOL_surface_sar",Period[i],sep="_")]
   Depl_OT_CRU     <- d_OT_CRU[boot] * loopdata[,paste("OT_CRU_surface_sar",Period[i],sep="_")]

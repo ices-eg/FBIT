@@ -1,17 +1,28 @@
 rm(list = ls())
 
+## Adjusted by Karin van der Reijden for the ADGEOB (April 2024)
+## adjustments:
+# - do not load library 'rgdal' as this is outdated.
+# - change Period from 2009-2022 to 2012-2022 (uncertainty of VMS coverage in 2009-2012)
+# - run code for all EcoReg areas, add the options as a comment
+# - fixed typo in preprocessing script
+# - changed legend titles in map plot script
+# - create single-panel plots of the fishing intensity, and time trends in fishing intensity and %impact < 0.2
+# - create two-panel plot of seabed sensitivity and PD-impact
+
 ### github folder
-  pathdir <- getwd()
+  #pathdir <- getwd()
+  pathdir <- "D:/FBIT"
   
 ### folder for restricted data
-  pathdir_nogit <- paste(getwd(),"Fisheries restricted",sep=" - ")
+  pathdir_nogit <- paste(pathdir,"Fisheries restricted",sep=" - ")
 
 ### get all libraries to run the work
   source(paste(pathdir,"Utilities/Libraries_FBIT.R",sep="/"))
   
 ### select the assessment region and years
-  EcoReg  <- "Bay of Biscay and the Iberian Coast"
-  Period <- 2009:2022 # period with fishing data to calculate impact
+  EcoReg  <-  "Celtic Seas" #"Baltic Sea" "Greater North Sea"  "Bay of Biscay and the Iberian Coast"
+  Period <- 2012:2022 # period with fishing data to calculate impact # changed from 2009-2022 to 2012-2022
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])
   AssYear <- 2022 # year to be assessed
@@ -34,8 +45,10 @@ rm(list = ls())
   
 ### run script to make final output  
   setwd(paste(pathdir,"Utilities",sep="/"))
-  source("map_plot.R")
-  source("map_plot_Baltic.R")
-  source("EO_Output_assessment.R")
+  
+  if(EcoReg == "Baltic Sea"){
+    source("map_plot_Baltic.R")} else {
+    source("map_plot.R")}
+  source("EO_Output_assessment.R") ## Newly created wrt ADGEOB april 2024: FigSAR, FigIMP, Figure2left, Figure2right
   source("Output_assessment.R")
   
