@@ -21,7 +21,7 @@ rm(list = ls())
   source(paste(pathdir,"Utilities/Libraries_FBIT.R",sep="/"))
   
 ### select the assessment region and years
-  EcoReg  <-  "Celtic Seas" #"Baltic Sea" "Greater North Sea"  "Bay of Biscay and the Iberian Coast"
+  EcoReg  <-  "Baltic Sea" #"Celtic Seas" "Greater North Sea"  "Bay of Biscay and the Iberian Coast"
   Period <- 2012:2022 # period with fishing data to calculate impact # changed from 2009-2022 to 2012-2022
   Assunit <- "Ecoregion" # "Ecoregion" or "EEZ" or "OSPARreg (for now only ecoregion possible)"
   Assregion <- EcoReg #  check which to select -> unique(Region@data[,paste(Assunit)])
