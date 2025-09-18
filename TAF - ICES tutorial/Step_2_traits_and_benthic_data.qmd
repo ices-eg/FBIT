@@ -1,0 +1,224 @@
+---
+title: "Estimating longevity distributions"
+author: "Daniel van Denderen & Jan-Geert Hiddink"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This step demonstrates how to use benthic sampling and trait data to estimate a biomass-longevity distribution.
+
+## Install and Load Required Libraries
+
+We first load again all the libraries and custom functions.
+
+```{r}
+
+# Load necessary libraries and custom functions 
+source("Libraries_needed.R") 
+source("Functions.R")
+```
+
+## Load and Process Benthic Data
+
+The benthic data originates from a Dutch monitoring program conducted in 2007. Samples were collected using a box corer, with one sample taken at each location. The number of stations is relatively low, which limits the reliability of the predictions we aim to make and mainly serves as an example.
+
+The benthic data is primarily identified at the species level. Trait information on longevity is linked to these species observations at the genus level. Longevity is categorized into four trait modalities: less than 1 year, 1–3 years, 3–10 years, and more than 10 years.
+
+```{r}
+
+# Load benthic data
+datBen <- read.csv(file="data/Benthic data/Benthic_Data_tutorial.csv", 
+                   header=TRUE, sep=";")
+head(datBen)
+
+# multiply biomass with fuzzy-coded traits
+datBen[,6:9] <- datBen$Biomass * datBen[,6:9] #get Longevity categories (col. 6:9) 
+
+# Summarize per sample ID and calculate fractions
+nC <- c("Biomass","L1","L1_3","L3_10","L10")
+statdat <- aggregate(. ~ sample_ID, 
+                     data = datBen[, c("sample_ID", nC)], 
+                     FUN = function(x) sum(x, na.rm = TRUE))
+nC <- nC[-1]
+statdat[,nC] <- statdat[,nC] / statdat$Biomass
+
+# load environmental information per station
+statEnv <- read.csv(file="data/Benthic data/Env_Data_tutorial.csv", 
+                    header=TRUE, sep=",")
+statEnv <- cbind(statEnv, statdat[match(statEnv$ID, statdat$sample_ID), nC])
+head(statEnv)
+
+```
+
+## Example: Longevity and biomass Distribution
+
+First, we run through an example with three stations that differ in their distribution of biomass among the four longevity modalities.
+
+```{r}
+# select three stations (row 1, 10 and 25)
+idx <- c(1, 10, 25)
+
+# extract the relevant longevity columns for the three rows
+bar_data <- statEnv[idx, c("ID", "L1", "L1_3", "L3_10", "L10")]
+
+# reshape from wide to long without tidyr
+bar_data_long <- reshape(bar_data,
+                         varying = c("L1", "L1_3", "L3_10", "L10"),
+                         v.names = "Fraction",
+                         timevar = "Longevity_class",
+                         times = c("L1", "L1_3", "L3_10", "L10"),
+                         direction = "long")
+
+# enforce correct order of bars
+bar_data_long$Longevity_class <- factor(
+  bar_data_long$Longevity_class,
+  levels = c("L1", "L1_3", "L3_10", "L10")
+)
+
+# plot with ggplot
+ggplot(bar_data_long, 
+       aes(x = Longevity_class, y = Fraction, fill = Longevity_class)) +
+  geom_col() +
+  facet_wrap(~ ID, nrow = 1) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "Longevity class", y = "Fraction of biomass") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+```
+
+Question: Which sampling location is most sensitive to bottom fishing disturbance? Which one is the least sensitive?
+
+This categorical information can be transformed into a continuous distribution by estimating cumulative biomass as a function of longevity.
+
+```{r}
+# Select sample indices for example
+idx <- c(1, 10, 25)
+
+# Build cumulative biomass example
+example <- data.frame(
+  Cumb = c(statEnv[idx,10],
+           statEnv[idx,10] + statEnv[idx,11],
+           statEnv[idx,10] + statEnv[idx,11] + statEnv[idx,12]),
+  Longevity = c(1,1,1,3,3,3,10,10,10),
+  ID = rep(statEnv$ID[idx], 3)
+)
+
+# First plot: linear x-axis
+p1 <- ggplot(example, aes(x = Longevity, y = Cumb, color = ID)) +
+  geom_point(size = 4) +
+  labs(x = "Longevity", y = "Cumulative biomass") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+
+p1
+
+```
+
+The cumulative distributions can be modeled by assuming that the biomass proportion at each station follows a sigmoidal (logistic) function of log-transformed longevity, starting at 0 and approaching 1 as longevity increases. This is done using a type of statistical model with a binomial distribution, which is suitable for modeling proportions.
+
+```{r}
+
+# Log-transform predictor
+example <- example %>% mutate(lx = log(Longevity))
+
+# Fit binomial GLM with interaction: lx * ID
+mod1 <- glm(Cumb ~ lx * ID, family = "binomial", data = example)
+
+# Create prediction grid for all IDs
+pred_data <- expand.grid(
+                  Longevity = seq(min(example$Longevity), 
+                                  max(example$Longevity), 
+                  length.out = 100), ID = unique(example$ID))
+pred_data$lx <- log(pred_data$Longevity)
+
+# Get predicted values
+pred_data$y_pred <- predict(mod1, newdata = pred_data, type = "response")
+
+# Plot points and per-ID lines
+ggplot(example, aes(x = Longevity, y = Cumb, color = ID)) +
+  geom_point(size = 3) +
+  geom_line(data = pred_data, aes(x = Longevity, y = y_pred, color = ID)) +
+  labs(x = "Longevity", y = "Cumulative biomass") +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")
+
+
+```
+
+## Longevity-biomass distributions
+
+We aim to estimate which environmental conditions drive variation in the cumulative biomass distributions. For example, if benthic fauna tend to be longer-lived in deeper waters, we want to quantify this relationship to predict how longevity, and therefore sensitivity, varies with depth.
+
+The current model we are using has the following structure:
+
+-   A generalized linear mixed-effects model
+
+-   Longevity is log-transformed
+
+-   Binomial family
+
+-   Sampling station is a random variable
+
+-   Year and replicate, if available, are random variables
+
+```{r}
+
+# Assign sediment categories
+table(statEnv$MSFDhab)
+
+id_mud <- c("Circalittoral mud","Offshore circalittoral mud")
+statEnv$sediment <- ifelse(statEnv$MSFDhab %in% id_mud, "Mud", "Coarse_Sand")
+
+# Prepare full dataset for mixed model
+ID        <- rep(statEnv$ID, 3)
+Sediment  <- rep(statEnv$sediment, 3)
+Depth     <- rep(statEnv$Depth, 3)
+Trawl     <- log10(rep(statEnv$SUR_SWEPT_KM2, 3))
+Stress    <- log10(rep(statEnv$Bedstress, 3))
+Cumb      <- c(statEnv$L1, statEnv$L1 + statEnv$L1_3, statEnv$L1 + statEnv$L1_3 + statEnv$L3_10)
+Longevity <- c(rep(1, nrow(statEnv)), rep(3, nrow(statEnv)), rep(10, nrow(statEnv)))
+
+fulldat <- data.frame(ID, Sediment, Depth, Cumb, Longevity, Trawl, Stress)
+fulldat$ll <- log(fulldat$Longevity)
+
+# Correct extreme values
+fulldat$Cumb <- pmin(pmax(fulldat$Cumb, 1e-3), 0.999)
+
+# Fit mixed-effects GLMs
+mod1 <- glmer(Cumb ~ ll + Sediment + Stress + (1 | ID), 
+              data=fulldat, family=binomial)
+mod2 <- glmer(Cumb ~ ll + Sediment + Trawl + (1 | ID), 
+              data=fulldat, family=binomial)
+mod3 <- glmer(Cumb ~ ll + Sediment + Depth + (1 | ID), 
+              data=fulldat, family=binomial)
+mod4 <- glmer(Cumb ~ ll + Sediment * Trawl + (1 | ID), 
+              data=fulldat, family=binomial)
+mod5 <- glmer(Cumb ~ ll + Sediment + Depth + (1 | ID), 
+              data=fulldat, family=binomial)
+mod6 <- glmer(Cumb ~ ll + Sediment + (1 | ID), 
+              data=fulldat, family=binomial)
+
+# Compare AIC
+AIC(mod1, mod2, mod3, mod4,mod5, mod6)
+
+```
+
+## Save the fixed effects of the model
+
+Finally, we save the fixed effects of the best model as an object for later use.
+
+```{r}
+
+# Save fixed effects of the best model
+modcoeff <- fixef(mod2)
+save(modcoeff, file="model/Coefficients_Bdata.RData")
+
+```

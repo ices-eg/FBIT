@@ -1,0 +1,155 @@
+---
+title: "ICES Tutorial: Building a Regional Grid"
+author: "Daniel van Denderen & Jan-Geert Hiddink"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This tutorial demonstrates how to create a spatial grid over a region of interest, assign c-squares ID to the grid, and enrich the grid with environmental data such as depth and seabed stress.
+
+We will use **sf**, and **ggplot2** to build and visualize the dataset. The spatial grid is created for the Southern North Sea.
+
+------------------------------------------------------------------------
+
+## Step 1: Install and Load Required Libraries
+
+We first load all the libraries and custom functions required for this analysis.
+
+```{r}
+
+# Load necessary libraries and custom functions
+source("Libraries_needed.R")
+source("Functions.R")
+```
+
+## Step 2: Define the Grid Extent
+
+We define the origin (lower-left corner), cell size, and number of cells to cover our area of interest.
+
+```{r}
+
+# Assign area of interest
+origin   <- c(-2, 50)       # lower-left corner (long, lat)
+cellsize <- c(0.05, 0.05)   # cell size in degrees
+n_cells  <- c(200, 150)     # number of cells in x (long) and y (lat)
+
+# Compute sequences of cell centers
+x_coords <- origin[1] + (0:(n_cells[1]-1)) * cellsize[1] + cellsize[1]/2
+y_coords <- origin[2] + (0:(n_cells[2]-1)) * cellsize[2] + cellsize[2]/2
+
+# Create grid of cell centers
+grid_centers <- expand.grid(x = x_coords, y = y_coords)
+```
+
+## Step 3: Build the Grid as Polygons
+
+Each grid cell is created as a polygon using its midpoint and the cell size.
+
+```{r}
+
+# Function to create a square polygon
+make_cell <- function(x, y, dx, dy) {
+  st_polygon(list(matrix(c(
+    x - dx/2, y - dy/2,
+    x + dx/2, y - dy/2,
+    x + dx/2, y + dy/2,
+    x - dx/2, y + dy/2,
+    x - dx/2, y - dy/2
+  ), ncol = 2, byrow = TRUE)))
+}
+
+# Create polygons
+polygons_list <- mapply(make_cell, grid_centers$x, grid_centers$y,
+                        MoreArgs = list(dx = cellsize[1], dy = cellsize[2]),
+                        SIMPLIFY = FALSE)
+
+# Convert to sf object
+grid_sf <- st_sf(
+  mid_long = grid_centers$x,
+  mid_lat  = grid_centers$y,
+  geometry = st_sfc(polygons_list),
+  crs = 4326
+)
+
+grid_sf
+```
+
+## Step 4: Assign C-squares
+
+C-squares are a spatial indexing system. We assign them to our grid cells.
+
+```{r}
+
+# Assign c-squares to each grid cell
+grid_sf$csquares <- CSquare(grid_sf$mid_long, grid_sf$mid_lat, 0.05)
+
+```
+
+## Step 5: Load Environmental Data
+
+We now load environmental data (depth and habitat type) and match it to the grid based on c-squares.
+
+```{r}
+
+# Load dataset
+dat <- read.csv("data/250328_MSFDhabitat_depth.csv")
+
+# Merge data with grid
+grid_sf <- cbind(
+  grid_sf,
+  dat[match(grid_sf$csquares, dat$csquares),
+      c("Ecoregion", "EEZ", "area_sqkm", "Depth", "Dominant_MSFD")]
+)
+
+# Quick visualization: depth
+ggplot() +
+  geom_sf(data = grid_sf, aes(col = Depth)) +
+  ggtitle("Depth across grid cells")
+
+```
+
+## Step 6: Add Bed Stress Data
+
+Next, we add seabed stress to the grid cell.
+
+```{r}
+
+# Load bed stress data
+bstress <- read.csv("data/Shear stress/M2 bed stress.csv")
+
+# Convert to sf
+bstress_sf <- st_as_sf(bstress, coords = c("Longitude", "Latitude"), crs = 4326)
+bstress_sf <- subset(bstress_sf, bstress_sf$M2.bedstress < 1e5)
+
+# Find nearest grid midpoint
+nearest_idx <- st_nearest_feature(grid_sf, bstress_sf)
+
+# Assign bed stress
+grid_sf$bedstress <- bstress_sf$M2.bedstress[nearest_idx]
+grid_sf$bedstress[is.na(grid_sf$Dominant_MSFD)] <- NA
+
+# Visualization: bed stress
+ggplot() +
+  geom_sf(data = grid_sf, aes(col = bedstress)) +
+  ggtitle("M2 Bed Stress across grid cells")
+
+```
+
+## Step 7: Save the Grid
+
+Finally, we save the grid object for later use.
+
+```{r}
+
+# Save the result
+save(grid_sf, file = "model/Region_grid.RData")
+
+grid_sf
+```
