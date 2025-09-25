@@ -181,12 +181,11 @@ statEnv$sediment <- ifelse(statEnv$MSFDhab %in% id_mud, "Mud", "Coarse_Sand")
 ID        <- rep(statEnv$ID, 3)
 Sediment  <- rep(statEnv$sediment, 3)
 Depth     <- rep(statEnv$Depth, 3)
-Trawl     <- log10(rep(statEnv$SUR_SWEPT_KM2, 3))
-Stress    <- log10(rep(statEnv$Bedstress, 3))
+Stress    <- log(rep(statEnv$Bedstress, 3))
 Cumb      <- c(statEnv$L1, statEnv$L1 + statEnv$L1_3, statEnv$L1 + statEnv$L1_3 + statEnv$L3_10)
 Longevity <- c(rep(1, nrow(statEnv)), rep(3, nrow(statEnv)), rep(10, nrow(statEnv)))
 
-fulldat <- data.frame(ID, Sediment, Depth, Cumb, Longevity, Trawl, Stress)
+fulldat <- data.frame(ID, Sediment, Depth, Cumb, Longevity, Stress)
 fulldat$ll <- log(fulldat$Longevity)
 
 # Correct extreme values
@@ -195,19 +194,20 @@ fulldat$Cumb <- pmin(pmax(fulldat$Cumb, 1e-3), 0.999)
 # Fit mixed-effects GLMs
 mod1 <- glmer(Cumb ~ ll + Sediment + Stress + (1 | ID), 
               data=fulldat, family=binomial)
-mod2 <- glmer(Cumb ~ ll + Sediment + Trawl + (1 | ID), 
+mod2 <- glmer(Cumb ~ ll + Sediment + Depth + (1 | ID), 
               data=fulldat, family=binomial)
-mod3 <- glmer(Cumb ~ ll + Sediment + Depth + (1 | ID), 
+mod3 <- glmer(Cumb ~ ll + Sediment + Depth + Stress + (1 | ID), 
               data=fulldat, family=binomial)
-mod4 <- glmer(Cumb ~ ll + Sediment * Trawl + (1 | ID), 
+mod4 <- glmer(Cumb ~ ll + Depth + Stress + (1 | ID), 
               data=fulldat, family=binomial)
-mod5 <- glmer(Cumb ~ ll + Sediment + Depth + (1 | ID), 
-              data=fulldat, family=binomial)
-mod6 <- glmer(Cumb ~ ll + Sediment + (1 | ID), 
+mod5 <- glmer(Cumb ~ ll + Sediment + (1 | ID), 
               data=fulldat, family=binomial)
 
 # Compare AIC
-AIC(mod1, mod2, mod3, mod4,mod5, mod6)
+AIC(mod1, mod2, mod3, mod4,mod5)
+
+# a model with only sediment is the best model
+# for the purpose of illustrating, we use model 2
 
 ```
 

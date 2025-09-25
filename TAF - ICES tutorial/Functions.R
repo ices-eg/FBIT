@@ -68,62 +68,64 @@ get_depletion_recovery_param <- function(nsim = 1){
   # depletion rates is based on  Hiddink et al. PNAS 2017 / Rijnsdorp et al. ICES 2020
   # percentiles are taken from Hiddink table S4. Relative difference in d percentiles is fixed per gear type
   
+  n <- nsim
+  
   quant     <- c(0.13, 0.200, 0.30)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_DRB_MOL <- c(0.200, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_DRB_MOL <- c(0.200,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.100/3, 0.100, 0.100*2.67)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_OT_CRU  <- c(0.100, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_OT_CRU  <- c(0.100, rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
-  quant     <- c(0.026/3, 0.026, 0.026*2.67)
+  quant     <- c(0.026/3, 0.026, 0.026*2.67)*10 # multiply with 10 too low numbers
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_OT_DMF  <- c(0.026, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_OT_DMF  <- c(0.026, (rlogitnorm(n, mu=theta[1], sigma=theta[2]))/10)
   
   quant     <- c(0.074/3, 0.074, 0.074*2.67)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_OT_MIX  <- c(0.074,rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_OT_MIX  <- c(0.074,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   # note OT_MIX combines OT_MIX, "OT_MIX_CRU_DMF", "OT_MIX_DMF_BEN" & "OT_MIX_DMF_PEL"
   
-  quant     <- c(0.009/3, 0.009, 0.009*2.67)*10 # does not convergence small numbers
+  quant     <- c(0.009/3, 0.009, 0.009*2.67)*10 # multiply with 10 too low numbers
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_OT_SPF  <- c(0.009,(rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))/10)
+  d_OT_SPF  <- c(0.009,(rlogitnorm(n, mu=theta[1], sigma=theta[2]))/10)
   
-  quant     <- c(0.009/3, 0.009, 0.009*2.67)*10 # does not convergence small numbers
+  quant     <- c(0.009/3, 0.009, 0.009*2.67)*10 # multiply with 10 too low numbers
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_SDN_DMF <- c(0.009,(rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))/10)
+  d_SDN_DMF <- c(0.009,(rlogitnorm(n, mu=theta[1], sigma=theta[2]))/10)
   
-  quant     <- c(0.016/3, 0.016, 0.016*2.67)*10 # does not convergence small numbers
+  quant     <- c(0.016/3, 0.016, 0.016*2.67)*10 # multiply with 10 too low numbers
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_SSC_DMF <- c(0.016,(rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))/10)
+  d_SSC_DMF <- c(0.016,(rlogitnorm(n, mu=theta[1], sigma=theta[2]))/10)
   
   quant     <- c(0.060/2, 0.060, 0.060*1.79)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_TBB_CRU <- c(0.060, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_TBB_CRU <- c(0.060,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.140/2, 0.140, 0.140*1.79)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_TBB_DMF <- c(0.14,rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_TBB_DMF <- c(0.14,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.060/2, 0.060, 0.060*1.79)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_TBB_MOL <- c(0.060,rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_TBB_MOL <- c(0.060,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.02, 0.06, 0.16)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_OTB     <- c(0.06, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_OTB     <- c(0.06,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.07, 0.14, 0.25)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_TBB     <- c(0.14,rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_TBB     <- c(0.14,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.13, 0.200, 0.30)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_TD      <- c(0.200, rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_TD      <- c(0.200,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   quant     <- c(0.25, 0.400, 0.55)
   theta     <- twCoefLogitnormN(quant, perc = c(0.05, 0.50, 0.95))
-  d_HD      <- c(0.400,rlogitnorm(nsim, mu=theta[1], sigma=theta[2]))
+  d_HD      <- c(0.400,rlogitnorm(n, mu=theta[1], sigma=theta[2]))
   
   # get H
   med   <- 5.31 # see Hiddink et al. 2019 J Applied Ecology
@@ -305,3 +307,8 @@ CSquare <- function(lon,lat,degrees){
   if(degrees == 0.01) CSquareCodes  <- paste(quadrants["globalQuadrant","code",],":",quadrants["intmQuadrant1","code",],":",quadrants["intmQuadrant2","code",],":",quadrants["intmQuadrant3","code",],sep="")
   
   return(CSquareCodes)}
+
+# logit function
+logit <- function(p) {
+  log(p / (1 - p))
+}

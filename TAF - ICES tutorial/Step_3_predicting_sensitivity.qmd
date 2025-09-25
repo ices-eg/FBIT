@@ -1,0 +1,156 @@
+---
+title: "Predicting benthic sensitivity"
+author: "Daniel van Denderen & Jan-Geert Hiddink"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+This step demonstrates how to predict benthic sensitivity. It is based on the regional grid defined in step 1 and the statitsical model (estimated in step 2).
+
+## Install and Load Required Libraries
+
+We first load again all the libraries and custom functions.
+
+```{r}
+
+# Load necessary libraries and custom functions 
+source("Libraries_needed.R") 
+source("Functions.R")
+```
+
+## Load regional grid and statistical model
+
+We can use the environmental data in each grid cell and the statistical model to predict benthic sensitivity.
+
+```{r}
+
+# Load grid data from step 1
+load("model/region_grid.RData")
+
+# load coefficients from step 2
+load("model/Coefficients_Bdata.RData") 
+
+coef_int   <- modcoeff[1]
+coef_ll    <- modcoeff[2]
+coef_Mud   <- modcoeff[3]
+coef_Depth <- modcoeff[4]
+
+```
+
+## Predict the longevity - biomass distribution per grid cell
+
+For each grid cell, we can predict the distribution of biomass across species longevity. This allows us not only to estimate the full distribution, but also to derive useful summary measures, such as the median longevity, i.e. the longevity at which 50% of biomass comes from longer-living species.
+
+To estimate longevity at a given cumulative biomass level, we need to follow these steps:
+
+### Rearranging the statistical model
+
+The fitted model has the form:
+
+$Cb \sim ll + \text{Depth} + \text{Sediment}$
+
+where:
+
+-   Cb = cumulative biomass (proportion between 0–1)\
+-   ll = log-transformed longevity\
+-   Depth= bottom depth\
+-   Sediment = categorical habitat covariate with two categories (e.g., *other/sand* vs. *mud*). One category (*other/sand*) is the reference. The other (*mud*) enters the equation as a binary indicator variable (0 = other/sand, 1 = mud).
+
+Because the model uses a binomial link, we apply the logit transformation to cumulative biomass:
+
+$\text{logit}(C_b) = \beta0 + \beta_{\text{ll}} \cdot ll + \beta_{\text{Mud}} \cdot \text{Mud} + \beta_{\text{Depth}} \cdot \text{Depth}$
+
+where:
+
+-   $\beta_0$ = intercept (coef_int)
+-   $\beta_{\text{ll}}$ = coefficient for log-longevity (coef_ll)
+-   $\beta_{\text{Mud}}$ = effect of *mud* sediment relative to *other/sand* (coef_Mud)
+-   $\beta_{\text{Depth}}$ = coefficient for bottom depth (coef_Depth)
+
+------------------------------------------------------------------------
+
+### Solving for longevity
+
+To rearrange for log-longevity:
+
+$ll = ({\text{logit}(Cb) - \beta_0 - \beta_{\text{Mud}} \cdot \text{Mud} - \beta_{\text{Depth}} \cdot \text{Depth}})  /  {\beta_{\text{ll}}}$
+
+Finally, back-transform to the original scale:
+
+$\text{longevity} = \exp(ll)$
+
+```{r}
+
+# prepare grid specific information to predict longevity
+id_mud <- c("Circalittoral mud","Offshore circalittoral mud","Infralittoral mud")
+Mud <- ifelse(grid_sf$Dominant_MSFD %in% id_mud,1,0)
+Depth <- grid_sf$Depth
+
+# estimate median longevity, i.e. the longevity at which 50% of biomass comes from longer-living species
+grid_sf$medLong <- exp((logit(0.5)- coef_int - coef_Mud*Mud - coef_Depth*Depth) / coef_ll)
+
+# Visualization: median longevity
+ggplot() +
+  geom_sf(data = grid_sf, aes(col = medLong)) +
+  ggtitle("Median longevity")
+
+```
+
+Median longevity is useful for plotting and for illustrating the sensitivity of the benthic community. To predict impacts, we do not rely solely on the median longevity value but consider the full biomass–longevity distribution in each grid cell. This distribution can be characterized by two parameters from the rearranged biomass–longevity equation: the intercept and the slope. These parameters are derived from the reformulated biomass–longevity relationship rather than from the statistical model.
+
+```{r}
+
+# slope to obtain biomass-longevity distribution
+grid_sf$slope     <- rep(coef_ll,nrow(grid_sf))
+
+# intercept to obtain biomass-longevity distribution
+grid_sf$intercept <- coef_int + coef_Mud*Mud + coef_Depth*Depth
+
+# make a plot for one grid cell to see how it looks
+Longevity <- c(0.01, 1:12)
+ll <- log(Longevity)
+Cb_pred <- exp(grid_sf$intercept[1] + grid_sf$slope[1] * ll) /
+  (1+ exp(grid_sf$intercept[1] + grid_sf$slope[1] * ll))
+
+plot_df <- data.frame(
+  Longevity = Longevity,
+  Cb = Cb_pred
+)
+
+# Plot
+ggplot(plot_df, aes(x = Longevity, y = Cb)) +
+  geom_line(color = "steelblue", linewidth = 1) +
+  geom_point(color = "black") +
+  labs(
+    x = "Longevity",
+    y = "Cumulative biomass",
+    title = "Biomass–Longevity Distribution"
+  ) +
+  theme_minimal()
+
+```
+
+## Save the grid with sensitivity prediction
+
+Finally, we save the fixed effects of the best model as an object for later use.
+
+```{r}
+# Save grid with sensitivity prediction
+
+save(grid_sf, file="model/Region_grid_sensitivity.RData") 
+```
+
+## Bonus
+
+In some cases, there may be an interaction between longevity (ll) and another parameter. For example, the effect of ll on cumulative biomass (Cb) might differ between shallow and deep areas. The intercept and slope of the longevity–biomass relationship will then depend on the interaction term, meaning they vary according to the parameter, such as depth.
+
+Can you re-arrange the equation to get the median longevity? And what would be the intercept and slope of the longevity-biomass distribution?
+
+\$\$\\text{logit}(C_b) = \\beta_0 + \\beta\_{\\text{ll}} \\cdot ll + \\beta\_{\\text{Mud}} \\cdot \\text{Mud} + \\beta\_{\\text{Depth}} \\cdot \\text{Depth} + \\beta\_{\\text{Depth\\\_ll}} \\cdot \\text{Depth} \\cdot ll\$\$
