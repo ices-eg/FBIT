@@ -1,0 +1,363 @@
+---
+title: "Additional options (advanced)"
+author: "Daniel van Denderen & Jan-Geert Hiddink"
+format: 
+  html:
+    self-contained: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## Introduction
+
+Here we introduce several additional options that are currently applied within the risk-assessment framework. These options are more advanced, and to fully understand the outputs it may be necessary to dissect the functions step by step.
+
+By the end of this section, you are able to estimate:
+
+-   the decline in biomass of the 10% most sensitive fauna (RBS~sen~)
+
+-   RBS and RBS~sen~ for a single gear type, for broad gear classifcations, and for ICES metiers classifications
+
+-   uncertainty in both RBS and RBS~sen~ based using resampling of depletion and recovery parameters
+
+-   the probability that benthic state in a grid cell is above or below a given quality threshold
+
+## Install and Load Required Libraries
+
+We first load again all the libraries and custom functions.
+
+```{r}
+
+# Load necessary libraries and custom functions 
+source("Libraries_needed.R") 
+source("Functions.R")
+```
+
+## RBS~sen~
+
+RBS (or RBS~tot~) represent the biomass of the whole benthic community. The RBS~sen~ impact indicator estimates the decline in biomass of the species that make up the top 10% of carrying capacity by longevity of the benthic community, and places more emphasis on declines of sensitive species. Both indicators quantify changes in biomass, which is assumed to be a proxy for the structure and function of benthic ecosystems. Both indicators scale from 1 (no impact) to 0 (the original benthic community / sensitive fauna has been completely removed or replaced by opportunistic species).
+
+The RBS~sen~ can be estimated in a similar way as RBS.
+
+```{r}
+
+# example for one grid cell with hypothetical values
+TBB_SurfSAR <- 3 # bean trawling intensity of 3 SAR per year
+Depl_tot    <- 0.14 * TBB_SurfSAR # depletion rate
+slope       <- 3.259143 # slope of a grid cell
+intercept   <- -4.593165 # intercept of a grid cell
+
+# state of the total community
+RBS(Fd = Depl_tot,
+    a = slope,
+    b = intercept,
+    H = 5.31)
+
+# state of the most sensitive part of the community
+RBS_sen(Fd = Depl_tot,
+    a = slope,
+    b = intercept,
+    H = 5.31)
+
+```
+
+You can vary the input values to see how the outputs differ.
+
+## Run the assessment model with different gear classifications
+
+Here we repeat the analysis from Step 4, but this time we will include different gear classifications. In addition, we will use the `get_state()` function, which enables us to directly estimate both RBS and RBS~sen~.
+
+We estimate these indicators in three ways:
+
+-   Single gear type – estimating state based on the fishing intensity of one specific gear type.
+
+-   Broad gear classification – estimating state based on the fishing intensity across all gear types using a high-level classification: beam trawl (TBB), otter trawl (OT), traditional dredge (TD), and hydraulic dredge (HD).
+
+-   Metier groupings – estimating state based on the fishing intensity across all gear types based on the métier categories typically used in ICES assessments.
+
+For this purpose, we will load an alternative fishing intensity dataset. These data are the standard datasets used in ICES assessments and are also reported to OSPAR and HELCOM.
+
+```{r}
+
+# Load grid data from step 1
+load("model/Region_grid_sensitivity.RData")
+
+# rm all rows without a sensitivity prediction
+grid_sf <- subset(grid_sf,!is.na(grid_sf$intercept))
+grid_sf <- subset(grid_sf,!is.na(grid_sf$intercept))
+
+# load fishing data
+FiD <- readRDS("data/Bottom_fishing/FishData1620.rds") 
+names(FiD)[1:25]
+
+```
+
+To see which gear types are currently available, you can use the `get_gear_names()` function. This function lists all gear options for which depletion estimates are available, and which can therefore be used to estimate state and impact using `get_state()`.
+
+```{r}
+
+get_gear_names()  
+```
+
+### Benthic state - single gear impact
+
+To estimate benthic state from fishing intensity from a single gear type, add an extra column to the grid data frame with the SAR information for that gear type. Make sure the column name matches one of the gear names returned by `get_gear_names()`. In this example, we will use otter trawling for demersal fish (OT_DMF) in 2016.
+
+```{r}
+
+# single gear prediction
+grid_sf_sg <- grid_sf
+
+# match the grid with OT_DMF in 2016 and fix the name to OT_DMF
+grid_sf_sg <- cbind(
+  grid_sf_sg,
+  OT_DMF = FiD[match(grid_sf_sg$csquares, FiD$csquares), "OT_DMF_surface_sar_2016"]
+)
+
+# set all NA's to zero (without fishing)
+grid_sf_sg$OT_DMF[is.na(grid_sf_sg$OT_DMF)] <- 0 
+
+
+```
+
+To estimate state, use the function `get_state()`. It requires two inputs:
+
+1.  A data frame containing:
+
+```         
+-   at least one column with SAR values by gear type
+
+-   one column named "slope",
+
+-   and one column named "intercept".
+```
+
+2.  Depletion and recovery parameters are required for the model. Standard values can be retrieved using the `get_depletion_recovery_param()` function.
+
+```{r}
+
+# make a data frame from the grid (it cannot handle an sf object)
+grid_dt <- as.data.frame(grid_sf_sg)
+
+d_r_values <- get_depletion_recovery_param()
+d_r_values
+
+# Apply get_state() to each row of grid_dt
+state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
+  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
+})
+
+# Extract results and assign to the sf object
+grid_sf_sg$RBS      <- sapply(state_list, `[[`, "RBS")
+grid_sf_sg$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+
+# get RBS 
+ggplot() +
+  geom_sf(data = grid_sf_sg, aes(col = RBS, fill=RBS)) +
+  ggtitle("RBS with OT_DMF fishing in 2016")
+
+# get RBSsen
+ggplot() +
+  geom_sf(data = grid_sf_sg, aes(col = RBS_sen,fill=RBS_sen)) +
+  ggtitle("RBSsen with OT_DMF fishing in 2016")
+```
+
+### Benthic state - broad-gear classification
+
+We can do the same for the broad-gear prediction. Since the fishing database does not include a prediction for TBB, OT etcetera, we first need to create these estimates.
+
+```{r}
+
+# get grid_sf for broad-gear prediction
+grid_sf_bg <- grid_sf
+
+FiD$TBB <- rowSums(FiD[,c("TBB_CRU_surface_sar_2016",
+                          "TBB_DMF_surface_sar_2016",
+                          "TBB_MOL_surface_sar_2016")],na.rm = T)
+
+FiD$OT <- rowSums(FiD[,c("OT_CRU_surface_sar_2016",
+                         "OT_DMF_surface_sar_2016",
+                         "OT_MIX_surface_sar_2016",
+                         "OT_SPF_surface_sar_2016")],na.rm=T) 
+
+FiD$TD <- FiD[,c("DRB_MOL_surface_sar_2016")]
+FiD$TD[is.na(FiD$TD)] <- 0
+
+
+# match the grid with OT_DMF in 2016 and fix the name to OT_DMF
+grid_sf_bg <- cbind(
+  grid_sf_bg,
+  FiD[match(grid_sf_bg$csquares, FiD$csquares), c("TBB","OT","TD")])
+
+ # set all NA's to zero (without fishing)
+grid_sf_bg$TBB[is.na(grid_sf_bg$TBB)] <- 0
+grid_sf_bg$OT[is.na(grid_sf_bg$OT)] <- 0 
+grid_sf_bg$TD[is.na(grid_sf_bg$TD)] <- 0 
+
+# now do the same as before
+# make a data frame from the grid (it cannot handle an sf object)
+grid_dt <- as.data.frame(grid_sf_bg)
+
+# get depletion and recovery values
+d_r_values <- get_depletion_recovery_param()
+
+# Apply get_state() to each row of grid_dt
+state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
+  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
+})
+
+# Extract results and assign to the sf object
+grid_sf_bg$RBS      <- sapply(state_list, `[[`, "RBS")
+grid_sf_bg$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+
+ggplot() +
+  geom_sf(data = grid_sf_bg, aes(col = RBS, fill=RBS)) +
+  ggtitle("RBS with OT, TBB, TD fishing in 2016")
+```
+
+### Benthic state - ICES métiers
+
+We can do the same for the ICES métiers. The fishing database does include an estimate of each, so we only need to couple it correctly to the grid database.
+
+```{r}
+
+# get grid_sf for ices metier prediction
+grid_sf_ig <- grid_sf
+
+cols_nb <- names(FiD)[
+  grepl("surface_sar", names(FiD)) & grepl("2016", names(FiD))]
+
+FiD_sub <- data.frame(FiD[,c("csquares",cols_nb)])
+gears   <- get_gear_names()[c(1:4,7:12)]
+colnames(FiD_sub) <- c("csquares",gears)
+
+grid_sf_ig <- cbind(grid_sf_ig, 
+                    FiD_sub[match(grid_sf_ig$csquares, FiD_sub$csquares), 2:11])
+
+# set all NA's to zero
+grid_sf_ig[,gears][is.na(grid_sf_ig[,gears])] <- 0
+
+# now do the same as before
+# make a data frame from the grid (it cannot handle an sf object)
+grid_dt <- as.data.frame(grid_sf_ig)
+
+# get depletion and recovery values
+d_r_values <- get_depletion_recovery_param()
+
+# Apply get_state() to each row of grid_dt
+state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
+  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
+})
+
+# Extract results and assign to the sf object
+grid_sf_ig$RBS      <- sapply(state_list, `[[`, "RBS")
+grid_sf_ig$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+
+ggplot() +
+  geom_sf(data = grid_sf_ig, aes(col = RBS, fill=RBS)) +
+  ggtitle("RBS with ices metiers in 2016")
+
+```
+
+## Uncertainty in state prediction
+
+For each grid cell, we can also estimate the uncertainty around the state prediction. Since depletion and recovery values have been derived from meta-analyses, we can incorporate their associated uncertainties into the model. This is done by re-sampling the depletion and recovery values.
+
+```{r}
+
+# get data.frame
+grid_dt <-  as.data.frame(grid_sf_ig)
+grid_dt2 <- grid_dt
+
+# re-sample the depletion and recovery parameters
+d_r_values <- get_depletion_recovery_param(n = 500)
+
+head(d_r_values)
+
+# Apply the re-sampling to one grid cell
+one_grid <- get_state(dat = grid_dt[1, ], H_d_values = d_r_values)
+
+# plot
+hist(one_grid$RBS,breaks = 50, main="Uncertainty in RBS",las=1,xlab="RBS")
+hist(one_grid$RBS_sen,breaks = 50, main="Uncertainty in RBS_sen",las=1,xlab="RBSsen")
+
+```
+
+To apply the re-sampling to each row of grid_dt will take some time. We can parallelize the loop with the following code.
+
+```{r}
+
+# Detect and register cores
+n_cores <- detectCores() - 1
+cl <- makeCluster(n_cores)
+registerDoParallel(cl)
+
+# example of 120 grids
+grid_dt <- grid_dt[1:120,]
+# Parallel foreach loop
+state_list <- foreach(j = 1:nrow(grid_dt), .packages = c()) %dopar% {
+  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
+}
+
+# Stop cluster when done
+stopCluster(cl)
+
+#plot one grid
+hist(state_list[[25]]$RBS,breaks = 50, main="Uncertainty in RBS",las=1,
+     xlab="RBS")
+hist(state_list[[25]]$RBS_sen,breaks = 50, main="Uncertainty in RBSsen",las=1,xlab="RBSsen")
+```
+
+## Probability that benthic state in a grid cell is above or below a given quality threshold 
+
+The probability that benthic state in a grid cell is above or below a given quality threshold provides a risk-based interpretation of the model outputs. By incorporating uncertainty in depletion and recovery parameters, we can estimate the likelihood that a cell meets or fails to meet the threshold. This information is particularly useful for management, as it highlights areas where the benthic state is likely above or below a quality threshold.
+
+In the context of the Marine Strategy Framework Directive, this corresponds to whether a cell is classified as being in or below Good Environmental Status (GES).
+
+Here we estimate the likelihood of the grid cells as being in GES. We set the quality threshold to reach GES at 0.8 for both RBS and RBS~sen~.
+
+```{r}
+
+# estimate likelihood of RBS is above the quality threshold 
+# one grid cell
+paste("likelihood of being in GES =", sum(state_list[[25]]$RBS > 0.8)/
+  length(state_list[[25]]$RBS) * 100, "%")
+
+# estimate likelihood RBSsen is above the quality threshold
+# one grid cell
+paste("likelihood of being in GES =",sum(state_list[[25]]$RBS_sen > 0.8)/ length(state_list[[25]]$RBS_sen) * 100 , "%")
+
+# now do it for all 120 example cells and plot the outcome
+df <- data.frame(
+  RBS_in_GES = numeric(120),
+  RBSsen_in_GES = numeric(120)
+)
+
+for(j in 1:120){ 
+ df$RBS_in_GES[j] <-  
+   sum(state_list[[j]]$RBS > 0.8) / 
+              length(state_list[[j]]$RBS) * 100
+
+ df$RBSsen_in_GES[j] <-  
+   sum(state_list[[j]]$RBS_sen > 0.8) / 
+                length(state_list[[j]]$RBS_sen) * 100
+}
+
+plot(sort(df$RBS_in_GES,decreasing = T),xlab="Grid cells",
+     ylab= "Likelihood of being in GES (as a %)",
+     las= 1,type="l",lwd=2, col="blue")
+lines(sort(df$RBSsen_in_GES,decreasing = T),col="red",lwd=2)
+
+```
+
+## Done?
+
+The fishing data includes information on the weight of fishing landings.
+
+Which gear type causes most impact relative to the weight of landings? And which gear type the least? *Hint*: Run the single gear scenario for each metier separately.
+
+## Done, again?
+
+Can you make the `get_state()` function 50% faster?

@@ -1,5 +1,5 @@
 ---
-title: "ICES Tutorial: Building a Regional Grid"
+title: "Building a Regional Grid"
 author: "Daniel van Denderen & Jan-Geert Hiddink"
 format: 
   html:
@@ -12,13 +12,13 @@ execute:
 
 ## Introduction
 
-This tutorial demonstrates how to create a spatial grid over a region of interest, assign c-squares ID to the grid, and enrich the grid with environmental data such as depth and seabed stress.
+This step demonstrates how to create a spatial grid over a region of interest, assign an unqiue ID to the grid, and enrich the grid with environmental data such as depth and seabed stress.
 
-We will use **sf**, and **ggplot2** to build and visualize the dataset. The spatial grid is created for the Southern North Sea.
+We will predominantly use the R-packages sf and ggplot2 to build and visualize the dataset. The spatial grid is created for the Southern North Sea.
 
 ------------------------------------------------------------------------
 
-## Step 1: Install and Load Required Libraries
+## Install and Load Required Libraries
 
 We first load all the libraries and custom functions required for this analysis.
 
@@ -29,7 +29,7 @@ source("Libraries_needed.R")
 source("Functions.R")
 ```
 
-## Step 2: Define the Grid Extent
+## Define the Grid Extent
 
 We define the origin (lower-left corner), cell size, and number of cells to cover our area of interest.
 
@@ -48,7 +48,7 @@ y_coords <- origin[2] + (0:(n_cells[2]-1)) * cellsize[2] + cellsize[2]/2
 grid_centers <- expand.grid(x = x_coords, y = y_coords)
 ```
 
-## Step 3: Build the Grid as Polygons
+## Build the Grid as Polygons
 
 Each grid cell is created as a polygon using its midpoint and the cell size.
 
@@ -81,7 +81,7 @@ grid_sf <- st_sf(
 grid_sf
 ```
 
-## Step 4: Assign C-squares
+## Assign an unique id
 
 C-squares are a spatial indexing system. We assign them to our grid cells.
 
@@ -92,7 +92,7 @@ grid_sf$csquares <- CSquare(grid_sf$mid_long, grid_sf$mid_lat, 0.05)
 
 ```
 
-## Step 5: Load Environmental Data
+## Load Environmental Data
 
 We now load environmental data (depth and habitat type) and match it to the grid based on c-squares.
 
@@ -110,14 +110,14 @@ grid_sf <- cbind(
 
 # Quick visualization: depth
 ggplot() +
-  geom_sf(data = grid_sf, aes(col = Depth)) +
+  geom_sf(data = grid_sf, aes(col = Depth, fill=Depth)) +
   ggtitle("Depth across grid cells")
 
 ```
 
-## Step 6: Add Bed Stress Data
+## Adding Other Environmental Data
 
-Next, we add seabed stress to the grid cell.
+Environmental data you add to the grid may differ in file type, grid resolution, and spatial or temporal coverage. Integrating these datasets into the grid often requires some adjustment. As an example, we will add seabed stress to the grid cell using the nearest mid-point.
 
 ```{r}
 
@@ -137,12 +137,12 @@ grid_sf$bedstress[is.na(grid_sf$Dominant_MSFD)] <- NA
 
 # Visualization: bed stress
 ggplot() +
-  geom_sf(data = grid_sf, aes(col = bedstress)) +
+  geom_sf(data = grid_sf, aes(col = bedstress, fill=bedstress)) +
   ggtitle("M2 Bed Stress across grid cells")
 
 ```
 
-## Step 7: Save the Grid
+## Save the Grid
 
 Finally, we save the grid object for later use.
 
@@ -153,3 +153,7 @@ save(grid_sf, file = "model/Region_grid.RData")
 
 grid_sf
 ```
+
+## Done?
+
+Obtain an environmental data layer for the southern North Sea from an online source, and then add this layer to your grid dataset.

@@ -27,7 +27,7 @@ source("Functions.R")
 
 ## Load and Process Benthic Data
 
-The benthic data originates from a Dutch monitoring program conducted in 2007. Samples were collected using a box corer, with one sample taken at each location. The number of stations is relatively low, which limits the reliability of the predictions we aim to make and mainly serves as an example.
+The benthic data comes from a Dutch monitoring program carried out in 2007. Samples were collected using a box corer, with one sample taken at each location. Because the number of stations is relatively low, the reliability of the predictions is limited. The analysis we aim to perform is therefore mainly illustrative and serves as an example.
 
 The benthic data is primarily identified at the species level. Trait information on longevity is linked to these species observations at the genus level. Longevity is categorized into four trait modalities: less than 1 year, 1–3 years, 3–10 years, and more than 10 years.
 
@@ -68,7 +68,7 @@ idx <- c(1, 10, 25)
 # extract the relevant longevity columns for the three rows
 bar_data <- statEnv[idx, c("ID", "L1", "L1_3", "L3_10", "L10")]
 
-# reshape from wide to long without tidyr
+# reshape from wide to long
 bar_data_long <- reshape(bar_data,
                          varying = c("L1", "L1_3", "L3_10", "L10"),
                          v.names = "Fraction",
@@ -222,3 +222,7 @@ modcoeff <- fixef(mod2)
 save(modcoeff, file="model/Coefficients_Bdata.RData")
 
 ```
+
+## Done?
+
+Match the environmental data layer obtained in Step 1 with the sampling locations. Incorporate this environmental information into your statistical model and repeat the model selection process.

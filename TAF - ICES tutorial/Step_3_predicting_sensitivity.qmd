@@ -12,7 +12,7 @@ execute:
 
 ## Introduction
 
-This step demonstrates how to predict benthic sensitivity. It is based on the regional grid defined in step 1 and the statitsical model (estimated in step 2).
+This step demonstrates how to predict benthic sensitivity. It is based on the regional grid defined in step 1 and the statitsical model estimated in step 2.
 
 ## Install and Load Required Libraries
 
@@ -98,7 +98,7 @@ grid_sf$medLong <- exp((logit(0.5)- coef_int - coef_Mud*Mud - coef_Depth*Depth) 
 
 # Visualization: median longevity
 ggplot() +
-  geom_sf(data = grid_sf, aes(col = medLong)) +
+  geom_sf(data = grid_sf, aes(col = medLong, fill= medLong)) +
   ggtitle("Median longevity")
 
 ```
@@ -147,7 +147,7 @@ Finally, we save the fixed effects of the best model as an object for later use.
 save(grid_sf, file="model/Region_grid_sensitivity.RData") 
 ```
 
-## Bonus
+## Done?
 
 In some cases, there may be an interaction between longevity (ll) and another parameter. For example, the effect of ll on cumulative biomass (Cb) might differ between shallow and deep areas. The intercept and slope of the longevity–biomass relationship will then depend on the interaction term, meaning they vary according to the parameter, such as depth.
 

@@ -27,7 +27,7 @@ source("Functions.R")
 
 ## Load benthic sensitivity and fishing intensity
 
-We can use the benthic sensitivity layer and a fishing intensity layer to predict impact.
+We can use the benthic sensitivity layer and a fishing intensity layer to predict impact. Fishing intensity is estimated using the swept area, and is defined as the ratio between the area of the site trawled each year and the site’s total area (SAR, swept area ratio).
 
 ```{r}
 
@@ -38,205 +38,120 @@ load("model/Region_grid_sensitivity.RData")
 grid_sf <- subset(grid_sf,!is.na(grid_sf$intercept))
 grid_sf <- subset(grid_sf,!is.na(grid_sf$intercept))
 
-# load fishing data
-FiD <- readRDS("data/Bottom_fishing/FishData1620.rds") 
-names(FiD)[1:25]
+# load example fishing data
+FiD <- read.csv("data/Bottom_fishing/Fishing_simple.csv") 
+head(FiD)
 
 
 ```
 
-## Get gear types
+## Estimate benthic depletion from fishing
 
-Changes in benthic state from fishing is estimated using the swept area, defined as the ratio between the area of the site trawled each year and the site’s total area (SAR, swept area ratio).
-
-We can estimate benthic state in different ways:
-
--   Single gear type – estimating state based on the fishing intensity of one specific gear type.
-
--   Broad gear classification – estimating state based on the fishing intensity across all gear types using a high-level classification: beam trawl (TBB), otter trawl (OT), traditional dredge (TD), and hydraulic dredge (HD).
-
--   Metier groupings – estimating state based on the fishing intensity across all gear types based on the métier categories typically used in ICES assessments.
-
-The function get_gear_names() shows all the options that are currently available.
+We can estimate the depletion rate that the trawls cause on the benthic community by multiplying SAR with the depletion rate per trawl pass estimated from experimental trawling studies.
 
 ```{r}
 
-get_gear_names() 
+# combine the sensitivity grid with the fishing data
+grid_sf <- cbind(grid_sf, FiD[match(grid_sf$csquares, 
+                                    FiD$csquares), 
+                              c(2:5)]) #TBB, OT, TD, Seine
+ 
+# now calculate the depletion rate per grid cell; 
+# value for TBB, OT and TD is from Hiddink et al. PNAS 2017 Table S4
+# value for Seine is put similar to otter trawling
+Depl_TBB  <- 0.14 * grid_sf$TBB_SurfSAR 
+Depl_OT   <- 0.06 * grid_sf$OT_SurfSAR 
+Depl_TD   <- 0.20 * grid_sf$TD_SurfSAR 
+Depl_sein <- 0.06 * grid_sf$Seine_SurfSAR
 
+# get total depletion
+Depl <- cbind(Depl_TBB,Depl_OT,Depl_TD,Depl_sein)
+grid_sf$Depl_tot <- rowSums(Depl,na.rm=T)
+
+# get total SAR
+grid_sf$SAR <- rowSums(
+  st_drop_geometry(grid_sf)[,c("TBB_SurfSAR","OT_SurfSAR",
+                               "TD_SurfSAR","Seine_SurfSAR")],na.rm=T) 
+
+# make a plot between SAR and depletion
+plot(grid_sf$Depl_tot~grid_sf$SAR,
+     xlab="SAR (per year)",ylab="Depletion rate (per year)",las=1)
 ```
 
-## Benthic state - single gear impact
+## Benthic state and impact
 
-To estimate benthic state from fishing intensity from a single gear type, add an extra column to the grid data frame with the SAR information for that gear type. Make sure the column name matches one of the gear names returned by get_gear_names().
+The impact of trawling on benthic biota depends on two key parameters: the depletion rate (*d*) and the intrinsic growth rate (*r*, hereafter referred to as the recovery rate). Both have been estimated through empirical meta-analyses.
+
+The Relative Benthic State (RBS) can be estimated using the RBS function, which requires four inputs:
+
+-   Depletion rate of the grid cell (Fd)
+
+-   Slope of the biomass-longevity curve (a)
+
+-   Intercept of the biomass-longevity curve (b)
+
+-   Longevity-to-recovery scaling parameter (H), used to calculate recovery rate as *r = H / longevity*
+
+RBS represents the proportion of total community biomass remaining under fishing pressure. The corresponding fishing impact is expressed as *1 – RBS*.
 
 ```{r}
 
-# single gear prediction
-grid_sf_sg <- grid_sf
+# one grid
+one_grid <- grid_sf[1,]
+state <- RBS(
+    Fd = one_grid$Depl_tot,
+    a  = one_grid$slope,
+    b  = one_grid$intercept,
+    H  = 5.31)
 
-# match the grid with OT_DMF in 2016 and fix the name to OT_DMF
-grid_sf_sg <- cbind(
-  grid_sf_sg,
-  OT_DMF = FiD[match(grid_sf_sg$csquares, FiD$csquares), "OT_DMF_surface_sar_2016"]
-)
+state
 
-# set all NA's to zero (without fishing)
-grid_sf_sg$OT_DMF[is.na(grid_sf_sg$OT_DMF)] <- 0 
+impact <- 1 - state
 
-
+impact
 ```
-
-To estimate state, use the function get_state(). It requires two inputs:
-
-1.  A data frame containing:
-
-```         
--   at least one column with SAR values by gear type
-
--   one column named "slope",
-
--   and one column named "intercept".
-```
-
-2.  Depletion and recovery parameters for the model. Standard values can be retrieved with get_depletion_recovery_param().
 
 ```{r}
 
-# make a data frame from the grid (it cannot handle an sf object)
-grid_dt <- as.data.frame(grid_sf_sg)
+# all grids
+state <- c()
+  for(j in 1:nrow(grid_sf)){
+   state[j] <- RBS(
+    Fd = grid_sf$Depl_tot[j],
+    a  = grid_sf$slope[j],
+    b  = grid_sf$intercept[j],
+    H  = 5.31)
+  }
 
-d_r_values <- get_depletion_recovery_param()
-d_r_values
+grid_sf$state <- state
+grid_sf$impact <- 1 - state
 
-# Apply get_state() to each row of grid_dt
-state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
-  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
-})
+# plot state as a function of total depletion
+  plot(grid_sf$state~grid_sf$Depl_tot,
+       ylab="Benthic state",xlab="Depletion rate (per year)",las=1)
+  
+```
 
-# Extract results and assign to the sf object
-grid_sf_sg$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_sg$RBS_sens <- sapply(state_list, `[[`, "RBS_sens")
+```{r}
 
+# make a map
 ggplot() +
-  geom_sf(data = grid_sf_sg, aes(col = RBS)) +
-  ggtitle("RBS with OT_DMF fishing in 2016")
-```
-
-## Benthic state - broad-gear classification
-
-We can do the same for the broad-gear prediction. Since the fishing database does not include a prediction for TBB, OT etcetera, we first need to create these estimates.
-
-```{r}
-
-# get grid_sf for broad-gear prediction
-grid_sf_bg <- grid_sf
-
-FiD$TBB <- rowSums(FiD[,c("TBB_CRU_surface_sar_2016",
-                          "TBB_DMF_surface_sar_2016",
-                          "TBB_MOL_surface_sar_2016")],na.rm = T)
-
-FiD$OT <- rowSums(FiD[,c("OT_CRU_surface_sar_2016",
-                         "OT_DMF_surface_sar_2016",
-                         "OT_MIX_surface_sar_2016",
-                         "OT_SPF_surface_sar_2016")],na.rm=T) 
-
-FiD$TD <- FiD[,c("DRB_MOL_surface_sar_2016")]
-FiD$TD[is.na(FiD$TD)] <- 0
-
-
-# match the grid with OT_DMF in 2016 and fix the name to OT_DMF
-grid_sf_bg <- cbind(
-  grid_sf_bg,
-  FiD[match(grid_sf_bg$csquares, FiD$csquares), c("TBB","OT","TD")])
-
- # set all NA's to zero (without fishing)
-grid_sf_bg$TBB[is.na(grid_sf_bg$TBB)] <- 0
-grid_sf_bg$OT[is.na(grid_sf_bg$OT)] <- 0 
-grid_sf_bg$TD[is.na(grid_sf_bg$TD)] <- 0 
-
-# now do the same as before
-# make a data frame from the grid (it cannot handle an sf object)
-grid_dt <- as.data.frame(grid_sf_bg)
-
-# get depletion and recovery values
-d_r_values <- get_depletion_recovery_param()
-
-# Apply get_state() to each row of grid_dt
-state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
-  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
-})
-
-# Extract results and assign to the sf object
-grid_sf_bg$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_bg$RBS_sens <- sapply(state_list, `[[`, "RBS_sens")
-
-ggplot() +
-  geom_sf(data = grid_sf_bg, aes(col = RBS)) +
-  ggtitle("RBS with OT, TBB, TD fishing in 2016")
-```
-
-## Benthic state - ICES metiers
-
-We can do the same for the ICES metier prediction. The fishing database does include an estimate of each, so we only need to couple it correctly to the grid database.
-
-```{r}
-
-# get grid_sf for ices metier prediction
-grid_sf_ig <- grid_sf
-
-cols_nb <- names(FiD)[
-  grepl("surface_sar", names(FiD)) & grepl("2016", names(FiD))]
-
-FiD_sub <- data.frame(FiD[,c("csquares",cols_nb)])
-gears   <- get_gear_names()[c(1:4,7:12)]
-colnames(FiD_sub) <- c("csquares",gears)
-
-grid_sf_ig <- cbind(grid_sf_ig, 
-                    FiD_sub[match(grid_sf_ig$csquares, FiD_sub$csquares), 2:11])
-
-# set all NA's to zero
-grid_sf_ig[,gears][is.na(grid_sf_ig[,gears])] <- 0
-
-# now do the same as before
-# make a data frame from the grid (it cannot handle an sf object)
-grid_dt <- as.data.frame(grid_sf_ig)
-
-# get depletion and recovery values
-d_r_values <- get_depletion_recovery_param()
-
-# Apply get_state() to each row of grid_dt
-state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
-  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
-})
-
-# Extract results and assign to the sf object
-grid_sf_ig$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_ig$RBS_sens <- sapply(state_list, `[[`, "RBS_sens")
-
-ggplot() +
-  geom_sf(data = grid_sf_ig, aes(col = RBS)) +
-  ggtitle("RBS with ices metiers in 2016")
+  geom_sf(data = grid_sf, aes(col = state,fill= state)) +
+  ggtitle("State")
 
 ```
 
 ## State by habitat type
 
-Now that we have a prediction for each grid cell, we can start estimating how this varies by habitat type.
+Now that we have a prediction for each grid cell, we can estimate how the average state varies by habitat type.
 
 ```{r}
-# mean RBS state by MSFD habitat type
-aggregate(RBS~Dominant_MSFD,data=grid_sf_ig, FUN=mean)
+# mean RBS by MSFD habitat type
+aggregate(state~Dominant_MSFD,data=grid_sf, FUN=mean)
 
-# mean RBS_sens state by MSFD habitat type
-aggregate(RBS_sens~Dominant_MSFD,data=grid_sf_ig, FUN=mean)
-
-# fraction of area above a state of 0.7 for RBS and RBS_sens
-grid_sf_ig$RBS_area <- ifelse(grid_sf_ig$RBS >0.7,1,0)
-sum(grid_sf_ig$RBS_area)/nrow(grid_sf_ig)
-
-grid_sf_ig$RBSsens_area <- ifelse(grid_sf_ig$RBS_sens >0.7,1,0)
-sum(grid_sf_ig$RBSsens_area)/nrow(grid_sf_ig)
-
+# fraction of area above a RBS of 0.7
+grid_sf$state_area <- ifelse(grid_sf$state >0.7,1,0)
+sum(grid_sf$state_area*grid_sf$area_sqkm)/sum(grid_sf$area_sqkm)
 ```
 
 ## Save the grid with impact prediction
@@ -246,76 +161,19 @@ Finally, we save the grid with the impact prediction.
 ```{r}
 # Save grid with sensitivity prediction
 
-save(grid_sf_ig, file="model/Region_grid_impact.RData") 
+save(grid_sf, file="model/Region_grid_impact.RData") 
 ```
 
-## Bonus 1
+## Done?
 
-For each grid cell, we can also estimate the uncertainty around the state prediction. This can be estimated by re-sampling the depletion and recovery values.
+The risk assessment framework can be used to explore different scenarios of management interventions.
 
-```{r}
+*Task*: In pairs, discuss and implement a realistic management intervention scenario and estimate its effect on the benthic state.
 
-# get data.frame
-grid_dt <-  as.data.frame(grid_sf_ig)
-grid_dt2 <- grid_dt
+Examples of interventions:
 
-# re-sample the depletion and recovery parameters
-d_r_values <- get_depletion_recovery_param(n = 500)
+-   Gear removal: reduce or eliminate the fishing intensity of one (or multiple) gear types.
 
-head(d_r_values)
+-   Area-based management: close a specific area to bottom fishing.
 
-# Apply the re-sampling to one grid cell
-one_grid <- get_state(dat = grid_dt[1, ], H_d_values = d_r_values)
-
-# plot
-hist(one_grid$RBS,breaks = 50, main="Uncertainty in RBS",las=1,xlab="RBS")
-hist(one_grid$RBS_sens,breaks = 50, main="Uncertainty in RBS_sens",las=1,xlab="RBS_sens")
-
-```
-
-To apply the re-sampling to each row of grid_dt will take some time. We can parallelize the loop with the following code .
-
-```{r}
-
-# Detect and register cores
-n_cores <- detectCores() - 1
-cl <- makeCluster(n_cores)
-registerDoParallel(cl)
-
-# example of 100 grids
-grid_dt <- grid_dt[1:100,]
-# Parallel foreach loop
-state_list <- foreach(j = 1:nrow(grid_dt), .packages = c()) %dopar% {
-  get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
-}
-
-# Stop cluster when done
-stopCluster(cl)
-
-#plot one grid
-hist(state_list[[25]]$RBS,breaks = 50, main="Uncertainty in RBS",las=1,
-     xlab="RBS")
-hist(state_list[[25]]$RBS_sens,breaks = 50, main="Uncertainty in RBS_sens",las=1,xlab="RBS_sens")
-```
-
-## Bonus 2
-
-The risk assessment framework allows exploring management scenarios and trade-offs. Implement one management scenario and estimate what it does for benthic state.
-
-Examples:
-
--   gear removal - remove the intensity of one (or multiple) gear type(s)
-
--   area-based management - close a particular area for bottom fishing.
-
-## Bonus 3
-
-Done? The fishing data includes information on the weight of fishing landings.
-
-Which gear type causes most impact relative to the weight of landings? And which gear type the least? Hint: Run the single gear scenario for each metier separately.
-
-## Bonus 4
-
-Done, again?
-
-Estimate what happens with benthic state when you lower the depletion of one gear type with 20%. Hint: Pre-made functions no longer work :)
+Prepare a short presentation summarizing your scenario and the outcomes.

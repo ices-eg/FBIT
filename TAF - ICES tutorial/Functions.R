@@ -3,9 +3,9 @@
 
 
 # ------------------------------------------------------------------------------
-# relative benthic state for 10% most long-lived fauna - RBS_sens
+# relative benthic state for 10% most long-lived fauna - RBS_sen
 
-RBS_sens <- function(Fd,a,b,H){        
+RBS_sen <- function(Fd,a,b,H){        
   #  a  = slope of binomial model, 
   #  b  = intercept of binomial model, 
   #  Fd = fishing SAR x depletion rate (gear specific)
@@ -21,8 +21,8 @@ RBS_sens <- function(Fd,a,b,H){
   K_sen <- K[idx]/sum(K[idx]*step.size)
   B = K_sen*(1 - Fd / r[idx]); B[B<0]=0
   
-  RBS_sens=sum(B)*step.size
-  RBS_sens
+  RBS_sen =sum(B)*step.size
+  RBS_sen 
 }
 
 
@@ -178,7 +178,7 @@ get_state <- function(dat,H_d_values){
   }
   
   PD      <- c()
-  PD_sens <- c()
+  PD_sen <- c()
   
   for(i_samp in 1:nrow(H_d_values)){
     Depl_tot <- H_d_values$d_DRB_MOL[i_samp] * dat[,"DRB_MOL"] +
@@ -200,9 +200,9 @@ get_state <- function(dat,H_d_values){
     
     H  <- H_d_values$H_par[i_samp] # recovery  = H/ longevity
     PD <- c(PD, RBS(Fd= Depl_tot,a=dat$slope,b=dat$intercept,H=H))
-    PD_sens <- c(PD_sens, RBS_sens(Fd= Depl_tot,a=dat$slope,b=dat$intercept,H=H))
+    PD_sen <- c(PD_sen, RBS_sen(Fd= Depl_tot,a=dat$slope,b=dat$intercept,H=H))
   }
-  return(list(RBS = PD,RBS_sens = PD_sens))
+  return(list(RBS = PD,RBS_sen = PD_sen))
 }
 
 
