@@ -16,7 +16,7 @@ This step demonstrates how to use benthic sampling and trait data to estimate a 
 
 ## Install and Load Required Libraries
 
-We first load again all the libraries and custom functions.
+We first load again the libraries and custom functions.
 
 ```{r}
 
@@ -54,6 +54,18 @@ statEnv <- read.csv(file="data/Benthic data/Env_Data_tutorial.csv",
                     header=TRUE, sep=",")
 statEnv <- cbind(statEnv, statdat[match(statEnv$ID, statdat$sample_ID), nC])
 head(statEnv)
+
+```
+
+We plot the stations within the grid defined in Step 1. As you can see, the number of stations is limited (but adequate to illustrate the methodology).
+
+```{r}
+load("model/Region_grid.RData")
+
+ggplot() +
+  geom_sf(data = grid_sf, aes(col = Depth, fill=Depth)) +
+  ggtitle("Depth across grid cells") +
+  geom_point(data=statEnv, aes(x=poslon, y=poslat),col="red")
 
 ```
 
@@ -155,9 +167,9 @@ ggplot(example, aes(x = Longevity, y = Cumb, color = ID)) +
 
 ## Longevity-biomass distributions
 
-We aim to estimate which environmental conditions drive variation in the cumulative biomass distributions. For example, if benthic fauna tend to be longer-lived in deeper waters, we want to quantify this relationship to predict how longevity, and therefore sensitivity, varies with depth.
+The goal of the statistical model is to estimate which environmental conditions drive variation in the cumulative biomass-longevity distributions. For example, if benthic fauna tend to be longer-lived in deeper waters, we want to quantify this relationship to predict how longevity, and therefore sensitivity, varies with depth.
 
-The current model we are using has the following structure:
+The statistical model we are typically using has the following structure:
 
 -   A generalized linear mixed-effects model
 
@@ -169,9 +181,11 @@ The current model we are using has the following structure:
 
 -   Year and replicate, if available, are random variables
 
+For this example, we examine three environmental data layers: depth, sediment type (categorical), and bed shear stress. To obtain sediment type information, we use the MSFD broad habitat type classification, which is derived from both depth and sediment characteristics. We do not use the depth information from the MSFD classification, since depth can also be presented as a continuous variable, which is generally more suitable for model fitting.
+
 ```{r}
 
-# Assign sediment categories
+# Assign sediment categories from MSFD broad habitat types
 table(statEnv$MSFDhab)
 
 id_mud <- c("Circalittoral mud","Offshore circalittoral mud")
@@ -182,13 +196,15 @@ ID        <- rep(statEnv$ID, 3)
 Sediment  <- rep(statEnv$sediment, 3)
 Depth     <- rep(statEnv$Depth, 3)
 Stress    <- log(rep(statEnv$Bedstress, 3))
-Cumb      <- c(statEnv$L1, statEnv$L1 + statEnv$L1_3, statEnv$L1 + statEnv$L1_3 + statEnv$L3_10)
-Longevity <- c(rep(1, nrow(statEnv)), rep(3, nrow(statEnv)), rep(10, nrow(statEnv)))
+Cumb      <- c(statEnv$L1, statEnv$L1 + statEnv$L1_3, 
+               statEnv$L1 + statEnv$L1_3 + statEnv$L3_10)
+Longevity <- c(rep(1, nrow(statEnv)), rep(3, nrow(statEnv)), 
+               rep(10, nrow(statEnv)))
 
 fulldat <- data.frame(ID, Sediment, Depth, Cumb, Longevity, Stress)
 fulldat$ll <- log(fulldat$Longevity)
 
-# Correct extreme values
+# Values need to be between 0 and 1, update "extremes"
 fulldat$Cumb <- pmin(pmax(fulldat$Cumb, 1e-3), 0.999)
 
 # Fit mixed-effects GLMs
@@ -213,7 +229,7 @@ AIC(mod1, mod2, mod3, mod4,mod5)
 
 ## Save the fixed effects of the model
 
-Finally, we save the fixed effects of the best model as an object for later use.
+Finally, we save the fixed effects of the model as an object for later use.
 
 ```{r}
 

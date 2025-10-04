@@ -16,7 +16,7 @@ This step shows how to estimate benthic state and impact relative to the benthic
 
 ## Install and Load Required Libraries
 
-We first load again all the libraries and custom functions.
+We first load again the libraries and custom functions.
 
 ```{r}
 
@@ -168,7 +168,7 @@ save(grid_sf, file="model/Region_grid_impact.RData")
 
 The risk assessment framework can be used to explore different scenarios of management interventions.
 
-*Task*: In pairs, discuss and implement a realistic management intervention scenario and estimate its effect on the benthic state.
+*Task*: In pairs, discuss and implement a management intervention scenario and estimate its effect on the benthic state.
 
 Examples of interventions:
 

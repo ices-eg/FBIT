@@ -24,6 +24,8 @@ By the end of this section, you are able to estimate:
 
 -   the probability that benthic state in a grid cell is above or below a given quality threshold
 
+Finally, the last script illustrates how to make nicer maps.
+
 ## Install and Load Required Libraries
 
 We first load again all the libraries and custom functions.
@@ -31,7 +33,8 @@ We first load again all the libraries and custom functions.
 ```{r}
 
 # Load necessary libraries and custom functions 
-source("Libraries_needed.R") 
+source("Libraries_needed.R")
+source("Libraries_add-on_step5.R")
 source("Functions.R")
 ```
 
@@ -116,7 +119,7 @@ grid_sf_sg <- cbind(
   OT_DMF = FiD[match(grid_sf_sg$csquares, FiD$csquares), "OT_DMF_surface_sar_2016"]
 )
 
-# set all NA's to zero (without fishing)
+# set all NA's to zero (NA is no fishing)
 grid_sf_sg$OT_DMF[is.na(grid_sf_sg$OT_DMF)] <- 0 
 
 
@@ -151,7 +154,7 @@ state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
 
 # Extract results and assign to the sf object
 grid_sf_sg$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_sg$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+grid_sf_sg$RBS_sen  <- sapply(state_list, `[[`, "RBS_sen")
 
 # get RBS 
 ggplot() +
@@ -166,7 +169,7 @@ ggplot() +
 
 ### Benthic state - broad-gear classification
 
-We can do the same for the broad-gear prediction. Since the fishing database does not include a prediction for TBB, OT etcetera, we first need to create these estimates.
+We can do the same for the broad-gear prediction. Since the fishing database does not include a prediction for TBB, OT etcetera, we first need to calculate these estimates by grouping the gears.
 
 ```{r}
 
@@ -185,13 +188,12 @@ FiD$OT <- rowSums(FiD[,c("OT_CRU_surface_sar_2016",
 FiD$TD <- FiD[,c("DRB_MOL_surface_sar_2016")]
 FiD$TD[is.na(FiD$TD)] <- 0
 
-
-# match the grid with OT_DMF in 2016 and fix the name to OT_DMF
+# match the grid with the gear types
 grid_sf_bg <- cbind(
   grid_sf_bg,
   FiD[match(grid_sf_bg$csquares, FiD$csquares), c("TBB","OT","TD")])
 
- # set all NA's to zero (without fishing)
+ # set all NA's to zero (NA is no fishing)
 grid_sf_bg$TBB[is.na(grid_sf_bg$TBB)] <- 0
 grid_sf_bg$OT[is.na(grid_sf_bg$OT)] <- 0 
 grid_sf_bg$TD[is.na(grid_sf_bg$TD)] <- 0 
@@ -210,7 +212,7 @@ state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
 
 # Extract results and assign to the sf object
 grid_sf_bg$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_bg$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+grid_sf_bg$RBS_sen  <- sapply(state_list, `[[`, "RBS_sen")
 
 ggplot() +
   geom_sf(data = grid_sf_bg, aes(col = RBS, fill=RBS)) +
@@ -226,13 +228,14 @@ We can do the same for the ICES métiers. The fishing database does include an e
 # get grid_sf for ices metier prediction
 grid_sf_ig <- grid_sf
 
+# find all columns with SAR by metier in 2016
 cols_nb <- names(FiD)[
   grepl("surface_sar", names(FiD)) & grepl("2016", names(FiD))]
 
+# match the grid with the gear types
 FiD_sub <- data.frame(FiD[,c("csquares",cols_nb)])
 gears   <- get_gear_names()[c(1:4,7:12)]
 colnames(FiD_sub) <- c("csquares",gears)
-
 grid_sf_ig <- cbind(grid_sf_ig, 
                     FiD_sub[match(grid_sf_ig$csquares, FiD_sub$csquares), 2:11])
 
@@ -253,7 +256,7 @@ state_list <- lapply(seq_len(nrow(grid_dt)), function(j) {
 
 # Extract results and assign to the sf object
 grid_sf_ig$RBS      <- sapply(state_list, `[[`, "RBS")
-grid_sf_ig$RBS_sen <- sapply(state_list, `[[`, "RBS_sen")
+grid_sf_ig$RBS_sen  <- sapply(state_list, `[[`, "RBS_sen")
 
 ggplot() +
   geom_sf(data = grid_sf_ig, aes(col = RBS, fill=RBS)) +
@@ -279,9 +282,9 @@ head(d_r_values)
 # Apply the re-sampling to one grid cell
 one_grid <- get_state(dat = grid_dt[1, ], H_d_values = d_r_values)
 
-# plot
-hist(one_grid$RBS,breaks = 50, main="Uncertainty in RBS",las=1,xlab="RBS")
-hist(one_grid$RBS_sen,breaks = 50, main="Uncertainty in RBS_sen",las=1,xlab="RBSsen")
+# plot a histogram
+hist(one_grid$RBS,    breaks = 50,main="Uncertainty RBS",   las=1,xlab="RBS")
+hist(one_grid$RBS_sen,breaks = 50,main="Uncertainty RBSsen",las=1,xlab="RBSsen")
 
 ```
 
@@ -296,6 +299,7 @@ registerDoParallel(cl)
 
 # example of 120 grids
 grid_dt <- grid_dt[1:120,]
+
 # Parallel foreach loop
 state_list <- foreach(j = 1:nrow(grid_dt), .packages = c()) %dopar% {
   get_state(dat = grid_dt[j, ], H_d_values = d_r_values)
@@ -305,28 +309,27 @@ state_list <- foreach(j = 1:nrow(grid_dt), .packages = c()) %dopar% {
 stopCluster(cl)
 
 #plot one grid
-hist(state_list[[25]]$RBS,breaks = 50, main="Uncertainty in RBS",las=1,
-     xlab="RBS")
-hist(state_list[[25]]$RBS_sen,breaks = 50, main="Uncertainty in RBSsen",las=1,xlab="RBSsen")
+hist(state_list[[25]]$RBS, breaks = 50, main="Uncertainty RBS",
+     las=1,xlab="RBS")
+hist(state_list[[25]]$RBS_sen,breaks = 50,main="Uncertainty RBSsen",
+     las=1,xlab="RBSsen")
 ```
 
-## Probability that benthic state in a grid cell is above or below a given quality threshold 
+## Probability that benthic state in a grid cell is above or below a given quality threshold
 
-The probability that benthic state in a grid cell is above or below a given quality threshold provides a risk-based interpretation of the model outputs. By incorporating uncertainty in depletion and recovery parameters, we can estimate the likelihood that a cell meets or fails to meet the threshold. This information is particularly useful for management, as it highlights areas where the benthic state is likely above or below a quality threshold.
+The probability that benthic state in a grid cell is above or below a given quality threshold provides a risk-based interpretation of the model outputs. By incorporating uncertainty in depletion and recovery parameters, we can estimate the likelihood that a cell meets or fails to meet the threshold. This information is useful for management, as it highlights areas where the benthic state is likely above or below a quality threshold.
 
-In the context of the Marine Strategy Framework Directive, this corresponds to whether a cell is classified as being in or below Good Environmental Status (GES).
+In the context of the Marine Strategy Framework Directive, this corresponds to whether a cell is classified as being at or below Good Environmental Status (GES).
 
-Here we estimate the likelihood of the grid cells as being in GES. We set the quality threshold to reach GES at 0.8 for both RBS and RBS~sen~.
+We will set the quality threshold to reach GES at 0.8 for both RBS and RBS~sen~ and estimate the likelihood of the grid cells as being in GES.
 
 ```{r}
 
-# estimate likelihood of RBS is above the quality threshold 
-# one grid cell
+# estimate likelihood of RBS is above the quality threshold in one grid cell
 paste("likelihood of being in GES =", sum(state_list[[25]]$RBS > 0.8)/
   length(state_list[[25]]$RBS) * 100, "%")
 
-# estimate likelihood RBSsen is above the quality threshold
-# one grid cell
+# estimate likelihood RBSsen is above the quality threshold in one grid cell
 paste("likelihood of being in GES =",sum(state_list[[25]]$RBS_sen > 0.8)/ length(state_list[[25]]$RBS_sen) * 100 , "%")
 
 # now do it for all 120 example cells and plot the outcome
@@ -349,6 +352,62 @@ plot(sort(df$RBS_in_GES,decreasing = T),xlab="Grid cells",
      ylab= "Likelihood of being in GES (as a %)",
      las= 1,type="l",lwd=2, col="blue")
 lines(sort(df$RBSsen_in_GES,decreasing = T),col="red",lwd=2)
+
+```
+
+## Nice(r) maps
+
+The code below illustrates how ggplot can be used to create nicer maps by adding country polygons.
+
+```{r}
+
+# load state prediction
+load("model/Region_grid_impact.RData")
+
+# Get world polygons
+world <- ne_countries(scale = 10, returnclass = "sf")
+coast <- ne_coastline(scale = 10, returnclass = "sf")
+
+# Get the min/max of long and lat
+xy <- st_bbox(grid_sf)
+
+# Create a plot of depth
+ggplot() +
+  geom_sf(data = grid_sf, aes(color = Depth, fill = Depth))+
+ scale_fill_viridis_c() + scale_color_viridis_c()+
+     theme(panel.background = element_rect(fill = "grey20", colour = NA),
+           plot.background  = element_rect(fill = "white", colour = NA)) + 
+  geom_sf(data = world, fill = "grey50", color = "black")  + # land polygons
+  coord_sf(xlim = c(xy[1],xy[3]), ylim = c(xy[2], xy[4]),expand = F)
+
+
+# Create a categorical plot of RBS state
+quat        <- c(-1,0.2,0.5,0.7,0.8,0.9,1,1.01) # define categories
+grid_sf$cat <- as.factor(cut(grid_sf$state,quat,right=F))
+label_all   <- c("0-0.2","0.2-0.5","0.5-0.7","0.7-0.8","0.8-0.9","0.9-1","1")
+
+color_man   <- c("#225ea8","#1d91c0","#41b6c4",
+                 "#7fcdbb","#c7e9b4","#edf8b1","#ffffd9")
+
+ggplot() + 
+  geom_sf(data=grid_sf, aes(fill=cat),col=NA) +
+  scale_fill_manual(values=color_man,labels=label_all,name="") + 
+  ggtitle(TeX("$RBS_{tot}$"))+
+  geom_sf(data = world, fill="black",colour="black") +
+  coord_sf(xlim = c(xy[1],xy[3]), ylim = c(xy[2], xy[4]),expand = F) +  
+  theme(legend.position = "bottom",
+        plot.background=element_blank(),
+        panel.background=element_blank(),
+        axis.text.y   = element_text(size=10),
+        axis.text.x   = element_text(size=10),
+        axis.title.y  = element_text(size=10),
+        axis.title.x  = element_text(size=10),
+        panel.border  = element_rect(colour = "grey", size=.5,fill=NA),
+        legend.text   = element_text(size=10),
+        legend.title  = element_text(size=10),
+        legend.box.margin = margin(-5, 0, -5, 0), 
+        legend.spacing.x = unit(0.2, "cm"),
+        legend.key.size = unit(0.4, "cm"))
 
 ```
 

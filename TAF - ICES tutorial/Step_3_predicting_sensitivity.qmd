@@ -16,7 +16,7 @@ This step demonstrates how to predict benthic sensitivity. It is based on the re
 
 ## Install and Load Required Libraries
 
-We first load again all the libraries and custom functions.
+We first load again the libraries and custom functions.
 
 ```{r}
 

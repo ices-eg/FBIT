@@ -14,7 +14,7 @@ execute:
 
 This step demonstrates how to create a spatial grid over a region of interest, assign an unqiue ID to the grid, and enrich the grid with environmental data such as depth and seabed stress.
 
-We will predominantly use the R-packages sf and ggplot2 to build and visualize the dataset. The spatial grid is created for the Southern North Sea.
+We will predominantly use the R-packages sf and ggplot2 to build and visualize the dataset. The spatial grid is created for the Southern North Sea, corresponding to the data used in Step 2.
 
 ------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ source("Functions.R")
 
 ## Define the Grid Extent
 
-We define the origin (lower-left corner), cell size, and number of cells to cover our area of interest.
+We define the origin (lower-left corner), cell size, and number of cells to cover the area of interest.
 
 ```{r}
 
@@ -67,7 +67,8 @@ make_cell <- function(x, y, dx, dy) {
 
 # Create polygons
 polygons_list <- mapply(make_cell, grid_centers$x, grid_centers$y,
-                        MoreArgs = list(dx = cellsize[1], dy = cellsize[2]),
+                        MoreArgs = list(dx = cellsize[1], 
+                                        dy = cellsize[2]),
                         SIMPLIFY = FALSE)
 
 # Convert to sf object
@@ -83,7 +84,7 @@ grid_sf
 
 ## Assign an unique id
 
-C-squares are a spatial indexing system. We assign them to our grid cells.
+C-squares are a spatial indexing system. We assign them to the grid cells.
 
 ```{r}
 
@@ -94,7 +95,7 @@ grid_sf$csquares <- CSquare(grid_sf$mid_long, grid_sf$mid_lat, 0.05)
 
 ## Load Environmental Data
 
-We now load environmental data (depth and habitat type) and match it to the grid based on c-squares.
+We now load environmental data (depth and habitat type) and match it to the grid based on the 0.05 c-square ID.
 
 ```{r}
 

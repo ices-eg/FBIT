@@ -3111,7 +3111,7 @@ vertical-align: -.125em;
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>This step demonstrates how to create a spatial grid over a region of interest, assign an unqiue ID to the grid, and enrich the grid with environmental data such as depth and seabed stress.</p>
-<p>We will predominantly use the R-packages sf and ggplot2 to build and visualize the dataset. The spatial grid is created for the Southern North Sea.</p>
+<p>We will predominantly use the R-packages sf and ggplot2 to build and visualize the dataset. The spatial grid is created for the Southern North Sea, corresponding to the data used in Step 2.</p>
 <hr>
 </section>
 <section id="install-and-load-required-libraries" class="level2">
@@ -3125,7 +3125,7 @@ vertical-align: -.125em;
 </section>
 <section id="define-the-grid-extent" class="level2">
 <h2 class="anchored" data-anchor-id="define-the-grid-extent">Define the Grid Extent</h2>
-<p>We define the origin (lower-left corner), cell size, and number of cells to cover our area of interest.</p>
+<p>We define the origin (lower-left corner), cell size, and number of cells to cover the area of interest.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign area of interest</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>origin   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">50</span>)       <span class="co"># lower-left corner (long, lat)</span></span>
@@ -3157,18 +3157,19 @@ vertical-align: -.125em;
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Create polygons</span></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>polygons_list <span class="ot">&lt;-</span> <span class="fu">mapply</span>(make_cell, grid_centers<span class="sc">$</span>x, grid_centers<span class="sc">$</span>y,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                        <span class="at">MoreArgs =</span> <span class="fu">list</span>(<span class="at">dx =</span> cellsize[<span class="dv">1</span>], <span class="at">dy =</span> cellsize[<span class="dv">2</span>]),</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">SIMPLIFY =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to sf object</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>grid_sf <span class="ot">&lt;-</span> <span class="fu">st_sf</span>(</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">mid_long =</span> grid_centers<span class="sc">$</span>x,</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">mid_lat  =</span> grid_centers<span class="sc">$</span>y,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">geometry =</span> <span class="fu">st_sfc</span>(polygons_list),</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">crs =</span> <span class="dv">4326</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>grid_sf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                        <span class="at">MoreArgs =</span> <span class="fu">list</span>(<span class="at">dx =</span> cellsize[<span class="dv">1</span>], </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">dy =</span> cellsize[<span class="dv">2</span>]),</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                        <span class="at">SIMPLIFY =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert to sf object</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>grid_sf <span class="ot">&lt;-</span> <span class="fu">st_sf</span>(</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  <span class="at">mid_long =</span> grid_centers<span class="sc">$</span>x,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="at">mid_lat  =</span> grid_centers<span class="sc">$</span>y,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">geometry =</span> <span class="fu">st_sfc</span>(polygons_list),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">crs =</span> <span class="dv">4326</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>grid_sf</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Simple feature collection with 30000 features and 2 fields
 Geometry type: POLYGON
@@ -3192,7 +3193,7 @@ First 10 features:
 </section>
 <section id="assign-an-unique-id" class="level2">
 <h2 class="anchored" data-anchor-id="assign-an-unique-id">Assign an unique id</h2>
-<p>C-squares are a spatial indexing system. We assign them to our grid cells.</p>
+<p>C-squares are a spatial indexing system. We assign them to the grid cells.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign c-squares to each grid cell</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>grid_sf<span class="sc">$</span>csquares <span class="ot">&lt;-</span> <span class="fu">CSquare</span>(grid_sf<span class="sc">$</span>mid_long, grid_sf<span class="sc">$</span>mid_lat, <span class="fl">0.05</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -3200,7 +3201,7 @@ First 10 features:
 </section>
 <section id="load-environmental-data" class="level2">
 <h2 class="anchored" data-anchor-id="load-environmental-data">Load Environmental Data</h2>
-<p>We now load environmental data (depth and habitat type) and match it to the grid based on c-squares.</p>
+<p>We now load environmental data (depth and habitat type) and match it to the grid based on the 0.05 c-square ID.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load dataset</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;data/250328_MSFDhabitat_depth.csv&quot;</span>)</span>
