@@ -75,7 +75,7 @@ grid_sf$SAR <- rowSums(
 
 # make a plot between SAR and depletion
 plot(grid_sf$Depl_tot~grid_sf$SAR,
-     xlab="SAR (per year)",ylab="Depletion rate (per year)",las=1)
+     xlab="SAR (per year)",ylab="Total depletion rate (F x d, per year)",las=1)
 ```
 
 ## Benthic state and impact
@@ -128,7 +128,7 @@ grid_sf$impact <- 1 - state
 
 # plot state as a function of total depletion
   plot(grid_sf$state~grid_sf$Depl_tot,
-       ylab="Benthic state",xlab="Depletion rate (per year)",las=1)
+       ylab="Benthic state",xlab="Total depletion rate (F x d, per year)",las=1)
   
 ```
 
